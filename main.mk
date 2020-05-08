@@ -32,21 +32,31 @@ help: ## Display this help screen (default)
 
 use: env.use
 
+
 ## Tool Dependencies
 DOCKER  ?= $(shell which docker)
 COMPOSE ?= $(shell which docker-compose)
 
-JQ ?= docker run -i colstrom/jq
-CUT ?= docker run -i busybox:1.31.1 cut
-REV ?= docker run -i busybox:1.31.1 rev
+JQ ?= $(DOCKER) run -i colstrom/jq
+CUT ?= $(DOCKER) run -i busybox:1.31.1 cut
+REV ?= $(DOCKER) run -i busybox:1.31.1 rev
 
-ENVSUBST ?= docker run \
-	-e TERRAFORM_STATE_BUCKET_NAME=$(TERRAFORM_STATE_BUCKET_NAME) \
-	-e TERRAFORM_STATE_KEY=$(TERRAFORM_STATE_KEY) \
-	-e TERRAFORM_STATE_REGION=$(TERRAFORM_STATE_REGION) \
-	-e TERRAFORM_STATE_PROFILE=$(TERRAFORM_STATE_PROFILE) \
-	-e TERRAFORM_STATE_DYNAMODB_TABLE=$(TERRAFORM_STATE_DYNAMODB_TABLE) \
-	-i widerplan/envsubst
+
+GOMPLATE ?= $(DOCKER) run \
+	-e ENV="$(ENV)" \
+	-e AWS_PROFILE="$(AWS_PROFILE)" \
+	-e AWS_REGION="$(AWS_REGION)" \
+	-e NAMESPACE="$(NAMESPACE)" \
+	-e EC2_KEY_PAIR_NAME="$(EC2_KEY_PAIR_NAME)" \
+	-e TAG="$(TAG)" \
+	-e SSH_PUBLIC_KEY="$(SSH_PUBLIC_KEY)" \
+	-e DOCKER_REGISTRY="$(DOCKER_REGISTRY)" \
+	-e TERRAFORM_STATE_BUCKET_NAME="$(TERRAFORM_STATE_BUCKET_NAME)" \
+	-e TERRAFORM_STATE_KEY="$(TERRAFORM_STATE_KEY)" \
+	-e TERRAFORM_STATE_REGION="$(TERRAFORM_STATE_REGION)" \
+	-e TERRAFORM_STATE_PROFILE="$(TERRAFORM_STATE_PROFILE)" \
+	-e TERRAFORM_STATE_DYNAMODB_TABLE="$(TERRAFORM_STATE_DYNAMODB_TABLE)" \
+	--rm -i hairyhenderson/gomplate
 
 ECHO = @echo
 
@@ -68,10 +78,10 @@ ifeq (, $(COMPOSE))
 #	@$(COMPOSE) --version
 endif
 
-# Ensures envsubst is installed
-envsubst:
-ifeq (, $(ENVSUBST))
-	$(error "envsubst is not installed or incorrectly configured. https://github.com/a8m/envsubst")
+# Ensures gomplate is installed
+gomplate:
+ifeq (, $(GOMPLATE))
+	$(error "gomplate is not installed or incorrectly configured. https://github.com/hairyhenderson/gomplate")
 endif
 
 # Ensures jq is installed

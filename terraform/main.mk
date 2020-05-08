@@ -1,23 +1,16 @@
 # Macroses
 ########################################################################################################################
-TF_VAR_ssh_public_key ?= $(shell cat ~/.ssh/id_rsa.pub)
+SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
+EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
 TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
 TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TERRAFORM_STATE_BUCKET_NAME ?= $(AWS_ACCOUNT)-tf-state
-CHECKOV ?= docker run -v $(PWD)/.infra/env/$(ENV):/tf -i bridgecrew/checkov -d /tf
+CHECKOV ?= $(DOCKER) run -v $(PWD)/.infra/env/$(ENV):/tf -i bridgecrew/checkov -d /tf
 TERRAFORM ?= $(shell which terraform)
-#TERRAFORM ?= docker run -w /terraform -v $(PWD)/:/terraform -i hashicorp/terraform:0.12.21 init
-
-ENVSUBST ?= docker run \
-	-e TERRAFORM_STATE_BUCKET_NAME=$(TERRAFORM_STATE_BUCKET_NAME) \
-	-e TERRAFORM_STATE_KEY=$(TERRAFORM_STATE_KEY) \
-	-e TERRAFORM_STATE_REGION=$(TERRAFORM_STATE_REGION) \
-	-e TERRAFORM_STATE_PROFILE=$(TERRAFORM_STATE_PROFILE) \
-	-e TERRAFORM_STATE_DYNAMODB_TABLE=$(TERRAFORM_STATE_DYNAMODB_TABLE) \
-	-i widerplan/envsubst
+#TERRAFORM ?= $(DOCKER) run -w /terraform -v $(PWD)/:/terraform -i hashicorp/terraform:0.12.21 init
 
 # Tasks
 ########################################################################################################################
@@ -31,24 +24,19 @@ terraform.debug:
 	@echo "\033[36mENV\033[0m: $(ENV)"
 	@echo "\033[36mTF_VAR_ssh_public_key\033[0m: $(TF_VAR_ssh_public_key)"
 
-# TODO: Potentionally replace envsubst by terragrunt
-terraform.init: envsubst terraform
-	@ cd .infra/env/$(ENV) && \
-	cat backend.tf.tmpl | $(ENVSUBST) > backend.tf && \
+# TODO: Potentionally replace gomplate by terragrunt
+terraform.init: gomplate terraform
+	@ \
+ 	cd .infra/env/$(ENV) && \
+	cat backend.tf.gotmpl | $(GOMPLATE) > backend.tf && \
+	cat terraform.tfvars.gotmpl | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
 
-
-# TODO: Potentionally replace envsubst by terragrunt
+# TODO: Potentionally replace gomplate by terragrunt
 # TODO:? Implement -target approach so we can deploy specific apps only
+# TODO: generate env vars into tfvars in only one task
 terraform.apply: terraform.init terraform ## Deploy infrastructure
 	@ cd .infra/env/$(ENV) && \
-	TF_VAR_env="$(ENV)" \
-	TF_VAR_aws_profile="$(AWS_PROFILE)" \
-	TF_VAR_aws_region="$(AWS_REGION)" \
-	TF_VAR_ec2_key_pair_name="$(ENV)-$(NAMESPACE)" \
-	TF_VAR_docker_image_tag="$(TAG)" \
-	TF_VAR_ssh_public_key="$(TF_VAR_ssh_public_key)" \
-	TF_VAR_docker_registry="$(DOCKER_REGISTRY)" \
 	$(TERRAFORM) plan -out=tfplan -input=false && \
 	$(TERRAFORM) apply -input=false tfplan && \
 	$(TERRAFORM) output -json > output.json
@@ -57,30 +45,19 @@ terraform.test: terraform.init terraform ## Test infrastructure
 	$(CHECKOV)
 	@ cd .infra/env/$(ENV) && \
 	$(TERRAFORM) validate ./ && \
-	TF_VAR_env="$(ENV)" \
-	TF_VAR_aws_profile="$(AWS_PROFILE)" \
-	TF_VAR_aws_region="$(AWS_REGION)" \
-	TF_VAR_ec2_key_pair_name="$(NAMESPACE)-$(ENV)" \
-	TF_VAR_docker_image_tag="$(TAG)" \
-	TF_VAR_ssh_public_key="$(TF_VAR_ssh_public_key)" \
-	TF_VAR_docker_registry="$(DOCKER_REGISTRY)" \
 	$(TERRAFORM) plan -input=false
 	@ $(CHECKOV)
 
+terraform.refresh: terraform.init terraform ## Test infrastructure
+	@ cd .infra/env/$(ENV) && \
+	$(TERRAFORM) refresh
 
-# TODO:? Potentionally replace envsubst by terragrunt
+# TODO:? Potentionally replace gomplate by terragrunt
 terraform.destroy: terraform confirm ## Destroy infrastructure
 	@ cd .infra/env/$(ENV) && \
-	TF_VAR_env="$(ENV)" \
-	TF_VAR_aws_profile="$(AWS_PROFILE)" \
-	TF_VAR_aws_region="$(AWS_REGION)" \
-	TF_VAR_ec2_key_pair_name="$(NAMESPACE)-$(ENV)" \
-	TF_VAR_docker_image_tag="$(TAG)" \
-	TF_VAR_ssh_public_key="$(TF_VAR_ssh_public_key)" \
-	TF_VAR_docker_registry="$(DOCKER_REGISTRY)" \
 	$(TERRAFORM) destroy
 
-env.use: envsubst terraform jq
+env.use: terraform jq
 	@ [ -e .infra/env/$(ENV) ] && \
 	( \
 		echo "Found $(ENV)" && \
@@ -97,7 +74,7 @@ env.use: envsubst terraform jq
 		echo "Created new $(ENV) from $(ENV_BASE)" \
 	)
 
-env.rm: envsubst terraform jq
+env.rm: terraform jq
 	@ [ -e .infra/env/$(ENV) ] && ( \
 		cd .infra/env/ && \
 		[ -f $(ENV)/.terraform/terraform.tfstate ] && ( \
