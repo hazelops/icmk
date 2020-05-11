@@ -2,7 +2,7 @@
 ########################################################################################################################
 AWS_PROFILE ?= $(NAMESPACE)-$(ENV_BASE)
 AWS_USER ?= $(shell aws --profile=$(AWS_PROFILE) iam get-user | $(JQ) -r ".User.UserName")
-AWS_ACCOUNT ?= $(shell $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account')
+AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.8
 # Tasks
@@ -16,8 +16,8 @@ aws.debug: ## Show environment information for debug purposes
 	@echo "\033[36mAWS_USER\033[0m: $(AWS_USER)"
 	@echo "\033[36mTAG\033[0m: $(TAG)"
 
-aws.profile: aws
-	$(shell mkdir ~/.aws && echo "[$(AWS_PROFILE)]\naws_access_key_id = $(AWS_ACCESS_KEY_ID)\naws_secret_access_key = $(AWS_SECRET_ACCESS_KEY)\nregion = $(AWS_REGION)" >> ~/.aws/credentials)
+aws.profile:
+	$(shell mkdir -p ~/.aws && echo "[$(AWS_PROFILE)]\naws_access_key_id = $(AWS_ACCESS_KEY_ID)\naws_secret_access_key = $(AWS_SECRET_ACCESS_KEY)\nregion = $(AWS_REGION)" >> ~/.aws/credentials)
 
 
 # Dependencies

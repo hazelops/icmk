@@ -1,6 +1,6 @@
 # Macroses
 ########################################################################################################################
-SERVICE_TASK_DEFINITION_ARN = $(shell cat .infra/env/$(ENV)/output.json | $(JQ) -r '.$(shell echo $(SVC) | sed 's/-/_/g')_task_definition_arn.value')
+SERVICE_TASK_DEFINITION_ARN = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -r '.$(shell echo $(SVC) | sed 's/-/_/g')_task_definition_arn.value')
 CMD_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ENV)-$(SVC) --image $(SVC) $(DOCKER_REGISTRY)/$(NAMESPACE)-$(SVC):$(TAG) --diff --rollback
 CMD_SERVICE_DOCKER_BUILD = $(DOCKER) build \
 	. \

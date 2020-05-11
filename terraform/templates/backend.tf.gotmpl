@@ -1,0 +1,9 @@
+terraform {
+  backend "s3" {
+    bucket         = "{{if .Env.TERRAFORM_STATE_BUCKET_NAME}}{{ .Env.TERRAFORM_STATE_BUCKET_NAME }}{{else}}nutcorpnet-tf-state{{end}}"
+    key            = "{{if .Env.TERRAFORM_STATE_KEY}}{{ .Env.TERRAFORM_STATE_KEY }}{{else}}foo/terraform.tfstate{{end}}"
+    region         = "{{if .Env.TERRAFORM_STATE_REGION}}{{ .Env.TERRAFORM_STATE_REGION }}{{else}}us-east-1{{end}}"
+    profile        = "{{if .Env.TERRAFORM_STATE_PROFILE}}{{ .Env.TERRAFORM_STATE_PROFILE }}{{else}}nutcorp-dev{{end}}"
+    dynamodb_table = "{{if .Env.TERRAFORM_STATE_DYNAMODB_TABLE}}{{ .Env.TERRAFORM_STATE_DYNAMODB_TABLE }}{{else}}tf-state-lock{{end}}"
+  }
+}

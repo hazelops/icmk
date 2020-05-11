@@ -1,3 +1,9 @@
+ROOT_DIR ?= $(PWD)
+INFRA_DIR ?= $(ROOT_DIR)/.infra
+
+include $(INFRA_DIR)/env/$(ENV)/*.mk
+include $(INFRA_DIR)/icmk/*/*.mk
+
 # Macroses
 ########################################################################################################################
 # Makefile Helpers
@@ -5,6 +11,12 @@ SVC = $(shell echo $(@) | $(CUT) -d. -f1 )
 SVC_TYPE = $(shell echo $(SVC) | $(CUT) -d- -f1 )
 ENV_BASE = dev
 NPM_TOKEN ?= nil
+
+
+
+ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG = $(INFRA_DIR)/icmk/terraform/templates/backend.tf.gotmpl
+ICMK_TEMPLATE_TERRAFORM_VARS = $(INFRA_DIR)/icmk/terraform/templates/terraform.tfvars.gotmpl
+
 
 # We are using a tag from AWS User which would tell us which environment this user is using. You can always override it.
 ENV ?= $(AWS_DEV_ENV_NAME)
