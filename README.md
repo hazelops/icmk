@@ -27,7 +27,7 @@ Clone or as a submodule, then include from your local Makefile. _(See examples)_
 
 ### Add as a submodule
 ```
-git submodule add https://github.com/hazelops/makac.git .infra/mk
+git submodule add https://github.com/hazelops/icmk.git .infra/icmk
 ```
 
 ### Include makiac in your local Makefile
