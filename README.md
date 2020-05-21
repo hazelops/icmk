@@ -30,7 +30,7 @@ Clone or as a submodule, then include from your local Makefile. _(See examples)_
 git submodule add https://github.com/hazelops/icmk.git .infra/icmk
 ```
 
-### Include makiac in your local Makefile
+### Include icmk in your local Makefile
 ```makefile
 include .infra/icmk/*.mk
 ```
