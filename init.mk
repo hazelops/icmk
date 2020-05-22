@@ -21,9 +21,11 @@ update:
 	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) checkout $(ICMK_VERSION)
 
 examples.simple: $(INFRA_DIR)/icmk
-	cp $(INFRA_DIR)/icmk/examples/simple/Makefile ./Makefile
-	cp $(INFRA_DIR)/icmk/examples/simple/.envrc-example .envrc-example
-	cp -dR $(INFRA_DIR)/icmk/examples/simple/env $(INFRA_DIR)/
+	@cp $(INFRA_DIR)/icmk/examples/simple/Makefile ./Makefile
+	@cp $(INFRA_DIR)/icmk/examples/simple/.envrc-example .envrc-example
+	@cp -R $(INFRA_DIR)/icmk/examples/simple/.infra/.gitignore $(INFRA_DIR)/
+	@cp -R $(INFRA_DIR)/icmk/examples/simple/.infra/env $(INFRA_DIR)/
+
 
 # TOOLS
 GIT  ?= $(shell which git)
