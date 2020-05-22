@@ -1,4 +1,4 @@
-# Make Infrastructure as Code Framework
+# Infrastructure as Code Make Framework
 
 This framework is an attempt to create a convenient way to manage Infrastructure as Code with low barrier of entry for the Runner.
 
@@ -30,9 +30,9 @@ Clone or as a submodule, then include from your local Makefile. _(See examples)_
 git submodule add https://github.com/hazelops/icmk.git .infra/icmk
 ```
 
-### Include makiac in your local Makefile
+### Include icmk in your local Makefile
 ```makefile
-include .infra/mk/*.mk
+include .infra/icmk/*.mk
 ```
 
 ### Ensure your Terraform has required outputs
