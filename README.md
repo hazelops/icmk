@@ -22,7 +22,7 @@ make tunnel # Creates an SSH tunnel via bastion host
 # Quickstart
 This `init` onliner will download and configure icmk in your directory. (Defaults to .infra/icmk, customizable).
 ```shell script
-make init -f $(curl -s https://hzl.xyz/icmk > $TMPDIR/icmk.mk && echo "$TMPDIR/icmk.mk")
+make init -f $(curl -Ls https://hzl.xyz/icmk > $TMPDIR/icmk.mk && echo "$TMPDIR/icmk.mk")
 ```
 
 ## Populate sample config
