@@ -19,23 +19,30 @@ Or
 make tunnel # Creates an SSH tunnel via bastion host
 ```
 
+# Quickstart
+This `init` onliner will download and configure icmk in your directory. (Defaults to .infra/icmk, customizable).
+```shell script
+make init -f $(curl -s https://hzl.xyz/icmk > $TMPDIR/icmk.mk && echo "$TMPDIR/icmk.mk")
+```
+
+## Populate sample config
+This will create the following:
+- Sample `Makefile`, which you can (and should) customize
+- Sample .envrc (which you can use with [direnv](https://github.com/direnv/direnv))
+- Sample Terraform environment structure under `.infra/env/testnut` which has a demo of bastion host and ssh tunnel. It forwards `localhost:222` to `bastion:22`. See `make tunnel.up` and `make tunnel.down`
+- Sample secrets directory that is used to push secrets to SSM via `make secrets`. Make sure to keep your `secrets/*.json` files out of git. 
+
+This won't create:
+- Anything else.
+
+```shell script
+make examples.simple
+```
+
 # Whats Wrong With Shell Scripts?
 Shell scripts do the job, but eventually they loose the coherency by turning into bash spaghetti. Makefiles are declarative and have ability to have dependencies. Also, GNU Make can be modular, which allows to build good Runner Experience with abstractions. There is more, but if this is not enough, feel free to submit a Github Issue with any questions or concerns.
- 
-# Quickstart
-Clone or as a submodule, then include from your local Makefile. _(See examples)_
 
-### Add as a submodule
-```
-git submodule add https://github.com/hazelops/icmk.git .infra/icmk
-```
-
-### Include icmk in your local Makefile
-```makefile
-include .infra/icmk/*.mk
-```
-
-### Ensure your Terraform has required outputs
+## Ensure your Terraform has required outputs
 This framework heavily relies on Terraform to get different values. It stores them in `output.json` and then reads them as needed. 
 
 Additional options to store `output.json` in SSM or Parameter Store or s3 bucket are not implemented yet (which will help with user permissions)
@@ -51,6 +58,7 @@ Currently, main features include
 # Dependencies
 The only two dependencies that you need are *:
 - GNU Make
+- Git
 - Docker
 
 # Disclaimer

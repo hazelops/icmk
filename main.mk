@@ -1,5 +1,3 @@
-ROOT_DIR ?= $(PWD)
-INFRA_DIR ?= $(ROOT_DIR)/.infra
 
 include $(INFRA_DIR)/env/$(ENV)/*.mk
 include $(INFRA_DIR)/icmk/*/*.mk
