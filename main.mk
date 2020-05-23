@@ -1,4 +1,3 @@
-
 include $(INFRA_DIR)/env/$(ENV)/*.mk
 include $(INFRA_DIR)/icmk/*/*.mk
 
@@ -10,11 +9,8 @@ SVC_TYPE = $(shell echo $(SVC) | $(CUT) -d- -f1 )
 ENV_BASE = dev
 NPM_TOKEN ?= nil
 
-
-
 ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG = $(INFRA_DIR)/icmk/terraform/templates/backend.tf.gotmpl
 ICMK_TEMPLATE_TERRAFORM_VARS = $(INFRA_DIR)/icmk/terraform/templates/terraform.tfvars.gotmpl
-
 
 # We are using a tag from AWS User which would tell us which environment this user is using. You can always override it.
 ENV ?= $(AWS_DEV_ENV_NAME)
@@ -28,11 +24,6 @@ env.debug: aws.debug
 up: docker
 	# TODO: This should probably use individual apps "up" definitions
 	echo "TODO: aws ecs local up"
-
-
-confirm:
-	@echo "\033[31mAre you sure? [y/N]\033[0m" && read ans && [ $${ans:-N} = y ] || (echo "\033[32mCancelled.\033[0m" && exit 1)
-
 
 login: ecr.login ## Perform all required authentication (ECR)
 auth: ecr.login
