@@ -45,10 +45,3 @@ ifeq (, $(GIT))
 #	@$(DOCKER) --version
 endif
 
-ifndef ENV
-$(error Please set ENV via `export ENV=<env_name>` or use direnv)
-endif
-
-ifndef AWS_PROFILE
-$(error Please set AWS_PROFILE via `export AWS_PROFILE=<aws_profile>` or use direnv)
-endif
