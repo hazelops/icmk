@@ -23,6 +23,7 @@ icmk.clean:
 	@rm -rf $(INFRA_DIR)/icmk && echo "Cleaning Done"
 
 icmk.update:
+	$(GIT) submodule update --init $(INFRA_DIR)/icmk
 	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) checkout $(ICMK_VERSION)
 
 examples.simple: confirm $(INFRA_DIR)/icmk
