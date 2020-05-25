@@ -14,7 +14,7 @@ init.bootstrap: icmk.install examples.simple
 icmk.install: $(INFRA_DIR)/icmk
 $(INFRA_DIR)/icmk:
 	@echo "Installing icmk from $(ICMK_VERSION)"
-	cd $(INFRA_DIR) && $(GIT) submodule add https://github.com/hazelops/icmk.git icmk
+	mkdir -p $(INFRA_DIR) && cd $(INFRA_DIR) && $(GIT) submodule add https://github.com/hazelops/icmk.git icmk
 	cd $(INFRA_DIR)/icmk && $(GIT) checkout $(ICMK_VERSION)
 	@rm -f $(TMPDIR)/icmk.mk && rm -f $(TMPDIR)/icmk.mk
 	@echo "Done!"
