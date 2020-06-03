@@ -4,13 +4,14 @@ TAG ?= $(ENV)
 SCALE ?= 3
 ECS_CLUSTER_NAME ?= $(ENV)-$(NAMESPACE)
 ECS_SERVICE_NAME ?= $(ENV)-$(SVC)
+ECS_TASK_NAME ?= $(ENV)-$(SVC)
 DOCKER_REGISTRY ?= $(AWS_ACCOUNT).dkr.ecr.$(AWS_REGION).amazonaws.com
 DOCKER_IMAGE_NAME ?= $(NAMESPACE)-$(SVC)
 DOCKERFILE ?= Dockerfile
 PROJECT_PATH ?= projects/$(SVC)
 
 SERVICE_TASK_DEFINITION_ARN = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -r '.$(shell echo $(SVC) | sed 's/-/_/g')_task_definition_arn.value')
-CMD_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ENV)-$(SVC) --image $(SVC) $(DOCKER_REGISTRY)/$(NAMESPACE)-$(SVC):$(TAG) --diff --rollback
+CMD_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_TASK_NAME) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --rollback
 CMD_SERVICE_DOCKER_BUILD = $(DOCKER) build \
 	. \
 	-t $(DOCKER_IMAGE_NAME) \
