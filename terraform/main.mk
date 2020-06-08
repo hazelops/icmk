@@ -35,20 +35,20 @@ terraform.init: gomplate terraform
 # TODO: Potentionally replace gomplate by terragrunt
 # TODO:? Implement -target approach so we can deploy specific apps only
 # TODO: generate env vars into tfvars in only one task
-terraform.apply: terraform.init terraform ## Deploy infrastructure
+terraform.apply: terraform.init ## Deploy infrastructure
 	@ cd $(INFRA_DIR)/env/$(ENV) && \
 	$(TERRAFORM) plan -out=tfplan -input=false && \
 	$(TERRAFORM) apply -input=false tfplan && \
 	$(TERRAFORM) output -json > output.json
 
-terraform.test: terraform.init terraform ## Test infrastructure
+terraform.test: terraform.init ## Test infrastructure
 	$(CHECKOV)
 	@ cd $(INFRA_DIR)/env/$(ENV) && \
 	$(TERRAFORM) validate ./ && \
 	$(TERRAFORM) plan -input=false
 	@ $(CHECKOV)
 
-terraform.refresh: terraform.init terraform ## Test infrastructure
+terraform.refresh: terraform.init ## Test infrastructure
 	@ cd $(INFRA_DIR)/env/$(ENV) && \
 	$(TERRAFORM) refresh
 
