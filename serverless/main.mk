@@ -25,4 +25,7 @@ ifeq (, $(SLS))
 endif
 
 CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --env $(ENV) --region $(AWS_REGION) --profile $(AWS_PROFILE)
+CMD_SLS_SERVICE_BUILD = cd $(PROJECT_PATH) && make
 CMD_SLS_SERVICE_DESTROY = $(SLS) remove --env $(ENV) --region $(AWS_REGION) --profile $(AWS_PROFILE)
+CMD_SLS_SERVICE_SECRETS_PUSH = $(CMD_SLS_SERVICE_SECRETS_PUSH)
+
