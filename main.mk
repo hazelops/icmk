@@ -20,7 +20,7 @@ ENV ?= $(AWS_DEV_ENV_NAME)
 .PHONY: auth help
 all: help
 env.debug: aws.debug
-	@echo "\033[32m=== ICMK Environment Info ===\033[0m"
+	@echo "\033[32m=== ICMK Info ===\033[0m"
 	@echo "\033[36mENV\033[0m: $(ENV)"
 	@echo "\033[36mTAG\033[0m: $(TAG)"
 	@echo "\033[36mICMK_VERSION\033[0m: $(ICMK_VERSION)"
