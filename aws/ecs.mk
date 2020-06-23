@@ -9,7 +9,7 @@ DOCKER_REGISTRY ?= $(AWS_ACCOUNT).dkr.ecr.$(AWS_REGION).amazonaws.com
 DOCKER_IMAGE_NAME ?= $(NAMESPACE)-$(SVC)
 DOCKERFILE ?= Dockerfile
 PROJECT_PATH ?= projects/$(SVC)
-
+ECS_DEPLOY_VERSION ?= 1.10.1
 
 ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs --profile $(AWS_PROFILE) run-task --cluster $(NAMESPACE)-$(ENV) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV) && sleep 1)
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs --profile $(AWS_PROFILE) describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
@@ -34,7 +34,7 @@ CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVI
 
 CMD_ECS_SERVICE_BIN = $(DOCKER) run -it --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) $(SVC)
 
-ECS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i fabfuel/ecs-deploy:1.7.1 ecs
+ECS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
 ECS_CLI ?= $(DOCKER) run \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(HOME)/.aws/:/root/.aws \

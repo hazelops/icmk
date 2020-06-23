@@ -1,7 +1,5 @@
-
 # Macroses
 ########################################################################################################################
-
 SSH_CONFIG ?= $(INFRA_DIR)/env/$(ENV)/ssh.config
 
 CMD_BASTION_SSH_TUNNEL_CONFIG = echo $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -r '.ssh_forward_config.value[]' > $(SSH_CONFIG)) && echo "\# SSH Tunnel Config \n\# Use the Forward ports to connect to remote instances (localhost:<PORT>)\n-----" && cat $(SSH_CONFIG)

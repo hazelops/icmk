@@ -1,6 +1,10 @@
 # Macroses
 ########################################################################################################################
-SLS ?= @$(DOCKER) run --entrypoint=serverless -v $(ROOT_DIR)/$(PROJECT_PATH):/opt/app -v $(HOME)/.aws/:/root/.aws -i amaysim/serverless:1.72.0
+SLS_VERSION ?= 1.73.1
+
+SLS ?= @$(DOCKER) run --entrypoint=serverless -v $(ROOT_DIR)/$(PROJECT_PATH):/opt/app -v $(HOME)/.aws/:/root/.aws \
+	-i amaysim/serverless:$(SLS_VERSION)
+
 # Tasks
 ########################################################################################################################
 #aws.debug: ## Show environment information for debug purposes
