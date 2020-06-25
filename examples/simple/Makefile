@@ -9,6 +9,7 @@ secrets: app.secrets ingest.secrets
 
 # Infrastructure
 infra: terraform.init terraform.apply
+terraform.test: terraform.checkov terraform.tflint
 
 ###################################################################################################
 # Services

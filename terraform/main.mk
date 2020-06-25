@@ -9,6 +9,7 @@ TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
 TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run -v $(INFRA_DIR)/env/$(ENV):/tf -i bridgecrew/checkov -d /tf
+TFLINT ?= $(DOCKER) run --rm -v $(INFRA_DIR)/env/$(ENV):/data -t wata727/tflint
 TERRAFORM ?= $(shell which terraform)
 #TERRAFORM ?= $(DOCKER) run -w /terraform -v $(PWD)/:/terraform -i hashicorp/terraform:0.12.21 init
 
@@ -17,7 +18,8 @@ TERRAFORM ?= $(shell which terraform)
 infra.init: terraform.init
 infra.deploy: terraform.apply
 infra.destroy: terraform.destroy
-infra.test: terraform.test
+infra.checkov: terraform.checkov
+infra.tflint: terraform.tflint
 
 terraform.debug:
 	@echo "\033[32m=== Terraform Environment Info ===\033[0m"
@@ -41,12 +43,19 @@ terraform.apply: terraform.init ## Deploy infrastructure
 	$(TERRAFORM) apply -input=false tfplan && \
 	$(TERRAFORM) output -json > output.json
 
-terraform.test: terraform.init ## Test infrastructure
+terraform.checkov: terraform.init ## Test infrastructure with checkov
 	$(CHECKOV)
 	@ cd $(INFRA_DIR)/env/$(ENV) && \
 	$(TERRAFORM) validate ./ && \
 	$(TERRAFORM) plan -input=false
 	@ $(CHECKOV)
+
+terraform.tflint: terraform.init ## Test infrastructure with tflint
+	$(TFLINT)
+	@ cd $(INFRA_DIR)/env/$(ENV) && \
+	$(TERRAFORM) validate ./ && \
+	$(TERRAFORM) plan -input=false
+	@ $(TFLINT)
 
 terraform.refresh: terraform.init ## Test infrastructure
 	@ cd $(INFRA_DIR)/env/$(ENV) && \
