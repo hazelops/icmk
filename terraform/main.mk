@@ -45,14 +45,12 @@ terraform.apply: terraform.init ## Deploy infrastructure
 	$(TERRAFORM) output -json > output.json
 
 terraform.checkov: ## Test infrastructure with checkov
-	$(CHECKOV)
 	@ cd $(ENV_DIR)
-	@ $(CHECKOV)
+	$(CHECKOV)
 
 terraform.tflint:  ## Test infrastructure with tflint
-	$(TFLINT)
 	@ cd $(ENV_DIR)
-	@ $(TFLINT)
+	$(TFLINT)
 
 terraform.refresh: terraform.init ## Test infrastructure
 	@ cd $(ENV_DIR) && \
