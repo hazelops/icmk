@@ -14,6 +14,7 @@ ICMK_TEMPLATE_TERRAFORM_VARS = $(INFRA_DIR)/icmk/terraform/templates/terraform.t
 
 # We are using a tag from AWS User which would tell us which environment this user is using. You can always override it.
 ENV ?= $(AWS_DEV_ENV_NAME)
+ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 
 # Tasks
 ########################################################################################################################

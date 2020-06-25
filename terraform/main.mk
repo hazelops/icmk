@@ -2,14 +2,15 @@
 ########################################################################################################################
 SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
+ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
 TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
 TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
-CHECKOV ?= $(DOCKER) run -v $(INFRA_DIR)/env/$(ENV):/tf -i bridgecrew/checkov -d /tf
-TFLINT ?= $(DOCKER) run --rm -v $(INFRA_DIR)/env/$(ENV):/data -t wata727/tflint
+CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf
+TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
 TERRAFORM ?= $(shell which terraform)
 #TERRAFORM ?= $(DOCKER) run -w /terraform -v $(PWD)/:/terraform -i hashicorp/terraform:0.12.21 init
 
@@ -29,7 +30,7 @@ terraform.debug:
 # TODO: Potentionally replace gomplate by terragrunt
 terraform.init: gomplate terraform
 	@ \
- 	cd $(INFRA_DIR)/env/$(ENV) && \
+ 	cd $(ENV_DIR) && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
@@ -38,36 +39,32 @@ terraform.init: gomplate terraform
 # TODO:? Implement -target approach so we can deploy specific apps only
 # TODO: generate env vars into tfvars in only one task
 terraform.apply: terraform.init ## Deploy infrastructure
-	@ cd $(INFRA_DIR)/env/$(ENV) && \
+	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) plan -out=tfplan -input=false && \
 	$(TERRAFORM) apply -input=false tfplan && \
 	$(TERRAFORM) output -json > output.json
 
-terraform.checkov: terraform.init ## Test infrastructure with checkov
+terraform.checkov: ## Test infrastructure with checkov
 	$(CHECKOV)
-	@ cd $(INFRA_DIR)/env/$(ENV) && \
-	$(TERRAFORM) validate ./ && \
-	$(TERRAFORM) plan -input=false
+	@ cd $(ENV_DIR)
 	@ $(CHECKOV)
 
-terraform.tflint: terraform.init ## Test infrastructure with tflint
+terraform.tflint:  ## Test infrastructure with tflint
 	$(TFLINT)
-	@ cd $(INFRA_DIR)/env/$(ENV) && \
-	$(TERRAFORM) validate ./ && \
-	$(TERRAFORM) plan -input=false
+	@ cd $(ENV_DIR)
 	@ $(TFLINT)
 
 terraform.refresh: terraform.init ## Test infrastructure
-	@ cd $(INFRA_DIR)/env/$(ENV) && \
+	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) refresh
 
 # TODO:? Potentionally replace gomplate by terragrunt
 terraform.destroy: terraform confirm ## Destroy infrastructure
-	@ cd $(INFRA_DIR)/env/$(ENV) && \
+	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) destroy
 
 env.use: terraform jq
-	@ [ -e $(INFRA_DIR)/env/$(ENV) ] && \
+	@ [ -e $(ENV_DIR) ] && \
 	( \
 		echo "Found $(ENV)" && \
 		cd $(INFRA_DIR)/env/ && \
@@ -84,7 +81,7 @@ env.use: terraform jq
 	)
 
 env.rm: terraform jq
-	@ [ -e $(INFRA_DIR)/env/$(ENV) ] && ( \
+	@ [ -e $(ENV_DIR) ] && ( \
 		cd $(INFRA_DIR)/env/ && \
 		[ -f $(ENV)/.terraform/terraform.tfstate ] && ( \
 			mv $(ENV)/.terraform/terraform.tfstate $(ENV)/terraform.$(ENV).$(shell date +%s).bak.tfstate \
