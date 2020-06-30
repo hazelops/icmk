@@ -28,8 +28,8 @@ CMD_ECS_SERVICE_DOCKER_BUILD = $(DOCKER) build \
 CMD_ECS_SERVICE_DOCKER_PUSH = $(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
 # TODO: Add log polling instead of sleep?
-CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: https://console.aws.amazon.com/ecs/home?region=$(AWS_REGION)$(HASHSIGN)/clusters/$(NAMESPACE)-$(ENV)/tasks/$(ECS_SERVICE_TASK_ID)/details"
-CMD_ECS_SERVICE_SCALE = @$(ECS) scale --profile $(AWS_PROFILE) $(ENV)-$(NAMESPACE) $(ENV)-$(SVC) $(SCALE)
+CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: https://console.aws.amazon.com/ecs/home?region=$(AWS_REGION)$(HASHSIGN)/clusters/$(ECS_CLUSTER_NAME)/tasks/$(ECS_SERVICE_TASK_ID)/details"
+CMD_ECS_SERVICE_SCALE = @$(ECS) scale --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_TASK_NAME) $(SCALE)
 CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 
 CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
