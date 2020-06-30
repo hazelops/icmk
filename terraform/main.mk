@@ -9,7 +9,7 @@ TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
 TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
 TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
-CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf
+CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
 TERRAFORM ?= $(shell which terraform)
 #TERRAFORM ?= $(DOCKER) run -w /terraform -v $(PWD)/:/terraform -i hashicorp/terraform:0.12.21 init
@@ -45,12 +45,17 @@ terraform.apply: terraform.init ## Deploy infrastructure
 	$(TERRAFORM) output -json > output.json
 
 terraform.checkov: ## Test infrastructure with checkov
+	@ echo "Testing with Checkov:"
+	@ echo "--------------------"
 	@ cd $(ENV_DIR)
-	$(CHECKOV)
+	@ $(CHECKOV)
 
 terraform.tflint:  ## Test infrastructure with tflint
+	@ echo "Testing with TFLint:"
+	@ echo "--------------------"
 	@ cd $(ENV_DIR)
-	$(TFLINT)
+	@ $(TFLINT) && \
+	echo "Test passed (OK)"
 
 terraform.refresh: terraform.init ## Test infrastructure
 	@ cd $(ENV_DIR) && \
