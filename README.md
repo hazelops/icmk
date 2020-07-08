@@ -56,7 +56,7 @@ Currently, main features include
 - SSH Tunnel
 
 # Dependencies
-The only two dependencies that you need are *:
+The only dependencies you'd need:
 - GNU Make
 - Git
 - Docker
@@ -64,4 +64,5 @@ The only two dependencies that you need are *:
 # Disclaimer
 This framework is inspired by the principles of delivering a good Runner Experience. It is provided as-is.
 
-\*This is nothing close to a complete framework: lots of features are still missing, naming and structuring can be improved. Even though it works, use it on your own risk.
+\*This is nothing close to a complete framework: lots of features are still missing, naming and structuring can be improved. Even though it works, use it on your own risk. PRs are welcome! 
+
