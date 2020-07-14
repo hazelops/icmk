@@ -29,9 +29,9 @@ CMD_ECS_SERVICE_DOCKER_BUILD = @ DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) bu
 	--build-arg BUILDKIT_INLINE_CACHE=$(ENABLE_BUILDKIT) \
 	--build-arg PROJECT_PATH=$(PROJECT_PATH)
 
-CMD_ECS_SERVICE_DOCKER_PUSH = \
-	@ $(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
-	@ $(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest
+CMD_ECS_SERVICE_DOCKER_PUSH = @ \
+	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
+	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest
 
 # TODO: Add log polling instead of sleep?
 CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: https://console.aws.amazon.com/ecs/home?region=$(AWS_REGION)$(HASHSIGN)/clusters/$(ECS_CLUSTER_NAME)/tasks/$(ECS_SERVICE_TASK_ID)/details"
