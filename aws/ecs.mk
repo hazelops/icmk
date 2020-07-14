@@ -19,15 +19,19 @@ ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs --profile $(AWS_PROFILE) run-task --clu
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs --profile $(AWS_PROFILE) describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
 
 CMD_ECS_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_SERVICE_TASK_DEFINITION_ARN) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --rollback
-CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) build \
+CMD_ECS_SERVICE_DOCKER_BUILD = @ DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) build \
 	. \
 	-t $(DOCKER_IMAGE_NAME) \
 	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) \
+	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest \
 	-f $(PROJECT_PATH)/$(DOCKERFILE) \
+	--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest \
 	--build-arg BUILDKIT_INLINE_CACHE=$(ENABLE_BUILDKIT) \
 	--build-arg PROJECT_PATH=$(PROJECT_PATH)
 
-CMD_ECS_SERVICE_DOCKER_PUSH = $(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
+CMD_ECS_SERVICE_DOCKER_PUSH = \
+	@ $(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
+	@ $(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest
 
 # TODO: Add log polling instead of sleep?
 CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: https://console.aws.amazon.com/ecs/home?region=$(AWS_REGION)$(HASHSIGN)/clusters/$(ECS_CLUSTER_NAME)/tasks/$(ECS_SERVICE_TASK_ID)/details"
