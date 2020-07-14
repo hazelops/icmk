@@ -10,7 +10,7 @@ DOCKER_IMAGE_NAME ?= $(NAMESPACE)-$(SVC)
 DOCKERFILE ?= Dockerfile
 PROJECT_PATH ?= projects/$(SVC)
 ECS_DEPLOY_VERSION ?= 1.10.1
-ENABLE_BUILDKIT=1
+ENABLE_BUILDKIT ?= 1
 
 ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
 ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
