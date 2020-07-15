@@ -11,6 +11,7 @@ DOCKERFILE ?= Dockerfile
 PROJECT_PATH ?= projects/$(SVC)
 ECS_DEPLOY_VERSION ?= 1.10.1
 ENABLE_BUILDKIT ?= 1
+ENABLE_INLINE_CACHE ?= $(ENABLE_BUILDKIT)
 
 ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
 ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
@@ -19,17 +20,20 @@ ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs --profile $(AWS_PROFILE) run-task --clu
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs --profile $(AWS_PROFILE) describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
 
 CMD_ECS_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_SERVICE_TASK_DEFINITION_ARN) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --rollback
-CMD_ECS_SERVICE_DOCKER_BUILD = @ DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) build \
+CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) build \
 	. \
 	-t $(DOCKER_IMAGE_NAME) \
 	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) \
 	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest \
 	-f $(PROJECT_PATH)/$(DOCKERFILE) \
 	--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest \
-	--build-arg BUILDKIT_INLINE_CACHE=$(ENABLE_BUILDKIT) \
+	--build-arg DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
+	--build-arg DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME) \
+	--build-arg ENV=$(ENV) \
+	--build-arg BUILDKIT_INLINE_CACHE=$(ENABLE_INLINE_CACHE) \
 	--build-arg PROJECT_PATH=$(PROJECT_PATH)
 
-CMD_ECS_SERVICE_DOCKER_PUSH = @ \
+CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest
 
