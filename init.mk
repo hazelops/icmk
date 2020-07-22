@@ -49,4 +49,4 @@ ifeq (, $(GIT))
 endif
 
 # This ensures we include main.mk only if it's there. If not we don't error out (IE in case of bootstrap)
--include $(INFRA_DIR)/main.mk
+-include $(INFRA_DIR)/icmk/main.mk
