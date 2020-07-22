@@ -1,6 +1,6 @@
 # Macroses
 ########################################################################################################################
-ROOT_DIR ?= $(PWD)
+ROOT_DIR ?= $(shell pwd)
 INFRA_DIR ?= $(ROOT_DIR)/.infra
 
 ICMK_VERSION ?= master
