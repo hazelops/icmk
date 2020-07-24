@@ -11,7 +11,8 @@ TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
-TERRAFORM ?= $(shell which terraform)
+TERRAFORM ?= $(DOCKER) run -v $(ENV_DIR):/terraform -w /terraform -i -t -e AWS_PROFILE=$(AWS_PROFILE) -v ~/.aws/:/root/.aws:ro hashicorp/terraform:light
+#TERRAFORM ?= $(shell which terraform)
 #TERRAFORM ?= $(DOCKER) run -w /terraform -v $(PWD)/:/terraform -i hashicorp/terraform:0.12.21 init
 
 # Tasks
