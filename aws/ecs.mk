@@ -1,6 +1,8 @@
 # Macroses
 ########################################################################################################################
 TAG ?= $(ENV)
+TAG_LATEST ?= $(ENV)-latest
+
 SCALE ?= 3
 ECS_CLUSTER_NAME ?= $(ENV)-$(NAMESPACE)
 ECS_SERVICE_NAME ?= $(ENV)-$(SVC)
@@ -24,9 +26,9 @@ CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) buil
 	. \
 	-t $(DOCKER_IMAGE_NAME) \
 	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) \
-	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest \
+	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST) \
 	-f $(PROJECT_PATH)/$(DOCKERFILE) \
-	--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(ENV)-latest \
+	--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST) \
 	--build-arg DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
 	--build-arg DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME) \
 	--build-arg ENV=$(ENV) \
