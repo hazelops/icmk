@@ -24,7 +24,7 @@ icmk.clean:
 	@rm -rf $(INFRA_DIR)/icmk && echo "Cleaning Done"
 
 icmk.update:
-	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset $(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION) && git pull
+	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset $(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION) && git pull origin $(ICMK_VERSION)
 
 examples.simple: confirm $(INFRA_DIR)/icmk
 	@cp $(INFRA_DIR)/icmk/examples/simple/Makefile ./Makefile
