@@ -66,6 +66,10 @@ terraform.destroy: terraform confirm ## Destroy infrastructure
 	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) destroy
 
+terraform.destroy-quiet: ## Destroy infrastructure without confirmation
+	@ cd $(ENV_DIR) && \
+	$(TERRAFORM) destroy -auto-approve
+
 env.use: terraform jq
 	@ [ -e $(ENV_DIR) ] && \
 	( \
