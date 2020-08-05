@@ -61,6 +61,10 @@ terraform.refresh: terraform.init ## Test infrastructure
 	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) refresh
 
+terraform.get: terraform.init ## Test infrastructure
+	@ cd $(ENV_DIR) && \
+	$(TERRAFORM) get --update
+
 # TODO:? Potentionally replace gomplate by terragrunt
 terraform.destroy: terraform confirm ## Destroy infrastructure
 	@ cd $(ENV_DIR) && \
