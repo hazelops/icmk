@@ -3,6 +3,8 @@
 SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
+JSON_FILE = $(INFRA_DIR)/env/$(ENV)/output.json
+JSON_OUTPUT = $(shell cat ${JSON_FILE} | base64)
 TERRAFORM_VERSION ?= "0.12.29"
 
 # Terraform Backend Config
@@ -13,6 +15,8 @@ TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
 TERRAFORM ?= $(DOCKER) run --rm -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v ~/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hashicorp/terraform:$(TERRAFORM_VERSION)
+SAVE_OUTPUT_TO_SSM = aws ssm put-parameter --name "output" --type "SecureString" --data-type "text" --overwrite --value "$(JSON_OUTPUT)"
+
 
 # Tasks
 ########################################################################################################################
@@ -73,6 +77,10 @@ terraform.destroy: terraform confirm ## Destroy infrastructure
 terraform.destroy-quiet: ## Destroy infrastructure without confirmation
 	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) destroy -auto-approve
+
+terraform.output-to-ssm: ## Upload output.json to AWS SSM. Output.json encoded in base64.
+	@ cd $(ENV_DIR) && \
+	$(SAVE_OUTPUT_TO_SSM)
 
 env.use: terraform jq
 	@ [ -e $(ENV_DIR) ] && \
