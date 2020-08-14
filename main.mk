@@ -48,6 +48,7 @@ COMPOSE ?= $(shell which docker-compose)
 JQ ?= $(DOCKER) run -i colstrom/jq
 CUT ?= $(DOCKER) run -i busybox:1.31.1 cut
 REV ?= $(DOCKER) run -i busybox:1.31.1 rev
+BASE64 ?= $(DOCKER) run -i busybox:1.31.1 base64
 
 
 GOMPLATE ?= $(DOCKER) run \
