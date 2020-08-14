@@ -1,6 +1,7 @@
 # Macroses
 ########################################################################################################################
 SLS_VERSION ?= 1.73.1
+SLS_FILE ?= serverless.yml
 
 SLS ?= @$(DOCKER) run --entrypoint=serverless -v $(ROOT_DIR)/$(PROJECT_PATH):/opt/app -v $(HOME)/.aws/:/root/.aws \
 	-i amaysim/serverless:$(SLS_VERSION)
@@ -28,8 +29,9 @@ ifeq (, $(SLS))
 	$(error "aws cli toolchain is not installed or incorrectly configured.")
 endif
 
-CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --env $(ENV) --region $(AWS_REGION) --profile $(AWS_PROFILE)
+CMD_SLS_SERVICE_INSTALL = $(SLS) install --env $(ENV) --region $(AWS_REGION) --profile $(AWS_PROFILE) --service $(SVC) -c $(SLS_FILE)
+CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --env $(ENV) --region $(AWS_REGION) --profile $(AWS_PROFILE) --service $(SVC) -c $(SLS_FILE)
 CMD_SLS_SERVICE_BUILD = cd $(PROJECT_PATH) && make
-CMD_SLS_SERVICE_DESTROY = $(SLS) remove --env $(ENV) --region $(AWS_REGION) --profile $(AWS_PROFILE)
+CMD_SLS_SERVICE_DESTROY = $(SLS) remove --env $(ENV) --region $(AWS_REGION) --profile $(AWS_PROFILE) --service $(SVC) -c $(SLS_FILE)
 CMD_SLS_SERVICE_SECRETS_PUSH = $(CMD_SLS_SERVICE_SECRETS_PUSH)
 
