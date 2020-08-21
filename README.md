@@ -29,7 +29,7 @@ make init -f $(curl -Ls https://hzl.xyz/icmk > $TMPDIR/icmk.mk && echo "$TMPDIR/
 This will create the following:
 - Sample `Makefile`, which you can (and should) customize
 - Sample .envrc (which you can use with [direnv](https://github.com/direnv/direnv))
-- Sample Terraform environment structure under `.infra/env/testnut` which has a demo of bastion host and ssh tunnel. It forwards `localhost:222` to `bastion:22`. See `make tunnel.up` and `make tunnel.down`
+- Sample Terraform environment structure under `.infra/env/testnut` which has a demo of bastion host and ssh tunnel. It forwards `localhost:222` to `bastion:22`. See `make tunnel.up` and `make tunnel.down`. In order to use make tunnel.up, Terraform config must be applied at least once (locally or via CI/CD).
 - Sample secrets directory that is used to push secrets to SSM via `make secrets`. Make sure to keep your `secrets/*.json` files out of git. 
 
 This won't create:
@@ -44,8 +44,6 @@ Shell scripts do the job, but eventually they loose the coherency by turning int
 
 ## Ensure your Terraform has required outputs
 This framework heavily relies on Terraform to get different values. It stores them in `output.json` and then reads them as needed. 
-
-Additional options to store `output.json` in SSM or Parameter Store or s3 bucket are not implemented yet (which will help with user permissions)
 
 # Features
 Currently, main features include
