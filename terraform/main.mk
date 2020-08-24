@@ -15,7 +15,7 @@ TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
 TERRAFORM ?= $(DOCKER) run --rm -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v ~/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hashicorp/terraform:$(TERRAFORM_VERSION)
-CMD_SAVE_OUTPUT_TO_SSM = $(AWS) ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --data-type "text" --overwrite --value "$(OUTPUT_JSON_BASE64)"
+CMD_SAVE_OUTPUT_TO_SSM = $(AWS) ssm put-parameter --region "$(AWS_REGION)" --name "/$(ENV)/terraform-output" --type "SecureString" --data-type "text" --overwrite --value "$(OUTPUT_JSON_BASE64)"
 
 # Tasks
 ########################################################################################################################
