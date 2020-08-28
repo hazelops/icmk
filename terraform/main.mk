@@ -41,9 +41,8 @@ terraform.init: gomplate terraform
 # TODO: Potentionally replace gomplate by terragrunt
 # TODO:? Implement -target approach so we can deploy specific apps only
 # TODO: generate env vars into tfvars in only one task
-terraform.apply: terraform.init ## Deploy infrastructure
+terraform.apply: terraform.plan ## Deploy infrastructure
 	@ cd $(ENV_DIR) && \
-	$(TERRAFORM) plan -out=tfplan -input=false && \
 	$(TERRAFORM) apply -input=false tfplan && \
 	$(TERRAFORM) output -json > output.json	&& \
 	$(CMD_SAVE_OUTPUT_TO_SSM)
@@ -82,7 +81,7 @@ terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json en
 	@ cd $(ENV_DIR) && \
 	$(CMD_SAVE_OUTPUT_TO_SSM)
 
-terraform.plan-output: terraform.init ## Terraform plan output for Github Action
+terraform.plan: terraform.init ## Terraform plan output for Github Action
 	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) plan -out=tfplan -input=false && \
 	$(TERRAFORM) show tfplan -input=false -no-color > $(ENV_DIR)/tfplan.txt
