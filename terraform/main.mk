@@ -84,7 +84,7 @@ terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json en
 terraform.plan: terraform.init ## Terraform plan output for Github Action
 	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) plan -out=tfplan -input=false && \
-	$(TERRAFORM) show tfplan -input=false -no-color > $(ENV_DIR)/tfplan.txt
+	$(TERRAFORM) show tfplan -input=false -no-color > $(ENV_DIR)/tfplan.txt && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/tfplan.md
 
 env.use: terraform jq
