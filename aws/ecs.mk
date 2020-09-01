@@ -50,7 +50,7 @@ CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 
-CMD_ECS_SERVICE_BIN = $(DOCKER) run -it --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) $(SVC)
+CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run -it --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
 ECS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
 ECS_CLI ?= $(DOCKER) run \
