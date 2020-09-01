@@ -14,6 +14,7 @@ PROJECT_PATH ?= projects/$(SVC)
 ECS_DEPLOY_VERSION ?= 1.10.1
 ENABLE_BUILDKIT ?= 1
 ENABLE_INLINE_CACHE ?= $(ENABLE_BUILDKIT)
+DOCKER_BUILD_ADDITIONAL_PARAMS ?=
 
 ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
 ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
@@ -33,7 +34,9 @@ CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) buil
 	--build-arg DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME) \
 	--build-arg ENV=$(ENV) \
 	--build-arg BUILDKIT_INLINE_CACHE=$(ENABLE_INLINE_CACHE) \
-	--build-arg PROJECT_PATH=$(PROJECT_PATH)
+	--build-arg PROJECT_PATH=$(PROJECT_PATH) \
+	$(DOCKER_BUILD_ADDITIONAL_PARAMS)
+
 
 CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
