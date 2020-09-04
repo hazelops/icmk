@@ -4,14 +4,6 @@ ifndef ENV
 $(error Please set ENV via `export ENV=<env_name>` or use direnv)
 endif
 
-ifndef AWS_PROFILE
-$(error Please set AWS_PROFILE via `export AWS_PROFILE=<aws_profile>` or use direnv)
-endif
-
-ifndef AWS_REGION
-$(error Please set AWS_REGION via `export AWS_REGION=<aws_region>` or use direnv. This is nessesary for additional tools that are not able to read a region from your AWS profile)
-endif
-
 
 -include $(INFRA_DIR)/env/$(ENV)/*.mk
 include $(INFRA_DIR)/icmk/*/*.mk
