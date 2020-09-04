@@ -1,5 +1,12 @@
+# Environment Validation
+########################################################################################################################
+ifndef AWS_REGION
+$(error Please set AWS_REGION via `export AWS_REGION=<aws_region>` or use direnv. This is nessesary for additional tools that are not able to read a region from your AWS profile)
+endif
+
 # Macroses
 ########################################################################################################################
+# We don't check for AWS_PROFILE, but instead we assume the profile name
 AWS_PROFILE ?= $(NAMESPACE)-$(ENV_BASE)
 AWS_USER ?= $(shell aws --profile=$(AWS_PROFILE) iam get-user | $(JQ) -r ".User.UserName")
 AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
@@ -20,6 +27,7 @@ aws.profile:
 
 # Dependencies
 ########################################################################################################################
+# TODO: Add validation for ability to connect to AWS
 # Ensures aws toolchain is installed
 aws:
 ifeq (, $(AWS))
