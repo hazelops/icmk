@@ -2,7 +2,6 @@
 ########################################################################################################################
 ROOT_DIR ?= $(shell pwd)
 INFRA_DIR ?= $(ROOT_DIR)/.infra
-PROJ_DIR ?= $(ROOT_DIR)/projects
 
 ICMK_VERSION ?= master
 ICMK_REPO ?= https://github.com/hazelops/icmk.git
