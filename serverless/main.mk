@@ -4,6 +4,7 @@ PROJ_PATH ?= $(PROJ_DIR)/$(SLS_SERVICE)-$(SLS_FUNCTION)
 
 SLS_DOCKER_IMAGE ?= amaysim/serverless
 SLS_VERSION ?= 1.73.1
+SLS_FILE ?= serverless.yml
 EVENT_FILE ?= event.json
 NODE_VERSION ?= 10.22.0-alpine3.9
 
@@ -13,7 +14,7 @@ NPM ?= $(DOCKER) run --rm --workdir=/app -v $(PROJ_PATH):/app node:$(NODE_VERSIO
 # Serverless CLI Reference
 ########################################################################################################################
 CMD_SLS_INSTALL_PLUGINS = $(NPM) install --save-dev
-CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --verbose --stage $(ENV) --region $(AWS_REGION)
+CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --verbose --stage $(ENV) --region $(AWS_REGION) --config $(SLS_FILE)
 CMD_SLS_SERVICE_INVOKE = $(SLS) invoke --function $(SLS_FUNCTION) --path $(EVENT_FILE) --stage $(ENV) --region $(AWS_REGION) --log
 CMD_SLS_SERVICE_DESTROY = $(SLS) remove --stage $(ENV) --region $(AWS_REGION)
 
