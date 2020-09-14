@@ -11,7 +11,7 @@ NPM ?= $(DOCKER) run --rm --workdir=/app -v $(PROJECT_PATH):/app node:$(NODE_VER
 
 # Serverless CLI Reference
 ########################################################################################################################
-CMD_SLS_INSTALL_PLUGINS = $(NPM) install --save-dev
+CMD_SLS_SERVICE_INSTALL = $(NPM) install --save-dev
 CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --verbose --stage $(ENV) --region $(AWS_REGION) --config $(SLS_FILE)
 CMD_SLS_SERVICE_INVOKE = $(SLS) invoke --function $(SLS_FUNCTION) --path $(EVENT_FILE) --stage $(ENV) --region $(AWS_REGION) --log
 CMD_SLS_SERVICE_DESTROY = $(SLS) remove --stage $(ENV) --region $(AWS_REGION)
@@ -20,7 +20,7 @@ CMD_SLS_SERVICE_DESTROY = $(SLS) remove --stage $(ENV) --region $(AWS_REGION)
 ########################################################################################################################
 sls.plugins:
 	@ cd $(PROJECT_PATH) && \
-	$(CMD_SLS_INSTALL_PLUGINS)
+	$(CMD_SLS_SERVICE_INSTALL)
 
 sls.deploy:
 	@ cd $(PROJECT_PATH) && \
