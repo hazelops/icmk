@@ -18,7 +18,7 @@ CMD_SLS_SERVICE_DESTROY = $(SLS) remove --stage $(ENV) --region $(AWS_REGION)
 
 # Tasks
 ########################################################################################################################
-sls.plugins:
+sls.install:
 	@ cd $(PROJECT_PATH) && \
 	$(CMD_SLS_SERVICE_INSTALL)
 
