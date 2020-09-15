@@ -18,6 +18,7 @@ CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --config $(SLS_FILE) --verbose --stage $(
 CMD_SLS_SERVICE_INVOKE = $(SLS) invoke --function $(SVC) --path $(EVENT_FILE) --stage $(ENV) --region $(AWS_REGION) --log
 CMD_SLS_SERVICE_DESTROY = $(SLS) remove --config $(SLS_FILE) --stage $(ENV) --region $(AWS_REGION)
 CMD_SLS_SERVICE_BUILD = cd $(ROOT_DIR)/$(PROJECT_PATH) && make
+CMD_SLS_SERVICE_SECRETS = $(CMD_SERVICE_SECRETS_PUSH)
 
 # Tasks
 ########################################################################################################################
