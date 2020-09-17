@@ -11,7 +11,11 @@ AWS_PROFILE ?= $(NAMESPACE)-$(ENV_BASE)
 AWS_USER ?= $(shell aws --profile=$(AWS_PROFILE) iam get-user | $(JQ) -r ".User.UserName")
 AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
-AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40
+# This can be overriden for different args, like setting an endpoint, like localstack
+AWS_ARGS ?= $(AWS_LOCALSTACK_ARG)
+LOCALSTACK_ENDPOINT ?= http://localhost:4566
+AWS_LOCALSTACK_ARG ?= $(shell echo $$([[ "$(ENABLE_LOCALSTACK)" == "1" ]] && echo "--endpoint-url=$(LOCALSTACK_ENDPOINT)" || "") )
+AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
 # Tasks
 ########################################################################################################################
 aws.debug: ## Show environment information for debug purposes
