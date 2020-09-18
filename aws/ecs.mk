@@ -14,6 +14,7 @@ ECS_DEPLOY_VERSION ?= 1.10.1
 ENABLE_BUILDKIT ?= 1
 ENABLE_INLINE_CACHE ?= $(ENABLE_BUILDKIT)
 DOCKER_BUILD_ADDITIONAL_PARAMS ?=
+DOCKER_RUN_ADDITIONAL_PARAMS ?=
 
 ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
 ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
@@ -49,7 +50,7 @@ CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 
-CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
+CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
 ECS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
 ECS_CLI ?= $(DOCKER) run \
