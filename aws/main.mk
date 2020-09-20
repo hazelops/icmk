@@ -13,8 +13,18 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFI
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
 # This can be overriden for different args, like setting an endpoint, like localstack
 AWS_ARGS ?= $(AWS_LOCALSTACK_ARG)
+LOCALSTACK_IMAGE ?= localstack/localstack-full
+LOCALSTACK_VERSION ?= latest
 LOCALSTACK_ENDPOINT ?= http://localhost:4566
+LOCALSTACK_WEB_UI_PORT ?= 8088
+LOCALSTACK_PORTS ?= "4565-4585"
+#We need to come up with idea where to keep and how to pass the $LOCALSTACK_SERVICE_LIST 
+LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda" #etc. serverless? api-gateway?
 AWS_LOCALSTACK_ARG ?= $(shell echo $$([[ "$(ENABLE_LOCALSTACK)" == "1" ]] && echo "--endpoint-url=$(LOCALSTACK_ENDPOINT)" || "") )
+
+LOCALSTACK_START ?= $(DOCKER) run -d -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) -p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) -e SERVICES=dynamodb -e DATA_DIR=/tmp/localstack/data -e PORT_WEB_UI=$(LOCALSTACK_WEB_UI_PORT) -e DOCKER_HOST=unix:///var/run/docker.sock -v ${TMPDIR:-/tmp/localstack}:/tmp/localstack $(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION)
+LOCALSTACK_STOP ?= $(DOCKER) rm $($(DOCKER) stop $($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}"))
+
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
 # Tasks
 ########################################################################################################################
