@@ -22,8 +22,14 @@ LOCALSTACK_PORTS ?= "4565-4585"
 LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda" #etc. serverless? api-gateway?
 AWS_LOCALSTACK_ARG ?= $(shell echo $$([[ "$(ENABLE_LOCALSTACK)" == "1" ]] && echo "--endpoint-url=$(LOCALSTACK_ENDPOINT)" || "") )
 
-LOCALSTACK_START ?= $(DOCKER) run -d -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) -p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) -e SERVICES=dynamodb -e DATA_DIR=/tmp/localstack/data -e PORT_WEB_UI=$(LOCALSTACK_WEB_UI_PORT) -e DOCKER_HOST=unix:///var/run/docker.sock -v ${TMPDIR:-/tmp/localstack}:/tmp/localstack $(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION)
-LOCALSTACK_STOP ?= $(DOCKER) rm $($(DOCKER) stop $($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}"))
+CMD_LOCALSTACK_START ?= $(DOCKER) run -d -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) -p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) \
+	-e SERVICES=$(LOCALSTACK_SERVICE_LIST) \
+	-e DATA_DIR=/tmp/localstack/data \
+	-e PORT_WEB_UI=$(LOCALSTACK_WEB_UI_PORT) \
+	-e DOCKER_HOST=unix:///var/run/docker.sock \
+	-v ${TMPDIR:-/tmp/localstack}:/tmp/localstack \
+	$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION)
+CMD_LOCALSTACK_STOP ?= $(DOCKER) rm $($(DOCKER) stop $($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}"))
 
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
 # Tasks
