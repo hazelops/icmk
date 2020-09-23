@@ -16,8 +16,9 @@ ENABLE_INLINE_CACHE ?= $(ENABLE_BUILDKIT)
 DOCKER_BUILD_ADDITIONAL_PARAMS ?=
 DOCKER_RUN_ADDITIONAL_PARAMS ?=
 
-ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
-ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
+ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
+ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
+SSM_OUTPUT_JSON = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d)
 
 ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs --profile $(AWS_PROFILE) run-task --cluster $(ECS_CLUSTER_NAME) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" --network-configuration '$(ECS_SERVICE_TASK_NETWORK_CONFIG)' --launch-type "$(ECS_SERVICE_TASK_LAUNCH_TYPE)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV) && sleep 1)
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs --profile $(AWS_PROFILE) describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
