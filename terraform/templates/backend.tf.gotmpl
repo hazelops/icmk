@@ -1,8 +1,13 @@
-{{if .Env.ENABLE_LOCALSTACK}}
+{{if (.Env.ENABLE_LOCALSTACK | strings.Contains "1")}}
+terraform {
+  backend "local" {}
+}
+
 provider "aws" {
   profile                     = var.aws_profile
   region                      = var.aws_region
   s3_force_path_style         = true
+  secret_key                  = "mock_secret_key"
   skip_credentials_validation = true
   skip_metadata_api_check     = true
   skip_requesting_account_id  = true
@@ -11,6 +16,7 @@ provider "aws" {
     apigateway     = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     cloudformation = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     cloudwatch     = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ec2            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     dynamodb       = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     es             = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     firehose       = "{{ .Env.LOCALSTACK_ENDPOINT }}"
@@ -30,6 +36,11 @@ provider "aws" {
   }
 }
 {{else}}
+provider "aws" {
+  profile = var.aws_profile
+  region  = var.aws_region
+}
+
 terraform {
   backend "s3" {
     bucket         = "{{if .Env.TERRAFORM_STATE_BUCKET_NAME}}{{ .Env.TERRAFORM_STATE_BUCKET_NAME }}{{else}}nutcorpnet-tf-state{{end}}"
@@ -38,11 +49,5 @@ terraform {
     profile        = "{{if .Env.TERRAFORM_STATE_PROFILE}}{{ .Env.TERRAFORM_STATE_PROFILE }}{{else}}nutcorp-dev{{end}}"
     dynamodb_table = "{{if .Env.TERRAFORM_STATE_DYNAMODB_TABLE}}{{ .Env.TERRAFORM_STATE_DYNAMODB_TABLE }}{{else}}tf-state-lock{{end}}"
   }
-}
-
-
-provider "aws" {
-  profile = var.aws_profile
-  region  = var.aws_region
 }
 {{end}}
