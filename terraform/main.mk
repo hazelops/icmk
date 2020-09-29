@@ -5,7 +5,6 @@ EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 OUTPUT_JSON_FILE = $(INFRA_DIR)/env/$(ENV)/output.json
 TERRAFORM_VERSION ?= "0.13.3"
-TERRAFORM_MAJOR_VERSION_UPGRADE ?= "0.13upgrade"
 
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
@@ -18,7 +17,8 @@ TERRAFORM ?= $(DOCKER) run --rm -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraf
 
 CMD_SAVE_OUTPUT_TO_SSM = $(AWS) --profile "$(AWS_PROFILE)" ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --tier "Intelligent-Tiering" --data-type "text" --overwrite --value "$$(cat $(OUTPUT_JSON_FILE) | $(BASE64))" > /dev/null && echo "\033[32m[OK]\033[0m Terraform output saved to ssm://$(ENV)/terraform-output" || echo "\033[31m[ERROR]\033[0m Terraform output saving failed"
 
-CMD_TERRAFORM_MODULES_UPGRADE = $(shell find $(INFRA_DIR)/terraform -name '*.tf' | xargs -n1 dirname | uniq | xargs -n1 $(TERRAFORM) $(TERRAFORM_MAJOR_VERSION_UPGRADE) -yes)
+# Optional cmd to be used, because the branch related to TF v0.13 upgrade already have updated versions.tf files
+CMD_TERRAFORM_MODULES_UPGRADE = $(shell find $(INFRA_DIR)/terraform -name '*.tf' | xargs -n1 dirname | uniq | xargs -n1 $(TERRAFORM) 0.13upgrade -yes)
 # Tasks
 ########################################################################################################################
 infra.init: terraform.init
@@ -40,6 +40,11 @@ terraform.init: gomplate terraform
 	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
 
+# Re-initialization of the backend to TF v0.13 version format
+terraform.reconfig:
+			@ \
+			cd $(ENV_DIR) && \
+			$(TERRAFORM) init -input=true -reconfigure
 # TODO: Potentionally replace gomplate by terragrunt
 # TODO:? Implement -target approach so we can deploy specific apps only
 # TODO: generate env vars into tfvars in only one task
