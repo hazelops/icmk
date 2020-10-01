@@ -28,7 +28,7 @@ CMD_LOCALSTACK_START ?= $(DOCKER) run -d -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTA
 	-e DOCKER_HOST=unix:///var/run/docker.sock \
 	-v ${TMPDIR:-/tmp/localstack}:/tmp/localstack \
 	$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION)
-CMD_LOCALSTACK_STOP ?= $(DOCKER) rm $($(DOCKER) stop $($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}"))
+CMD_LOCALSTACK_STOP ?= $(DOCKER) rm $$($(DOCKER) stop $$($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}"))
 
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
 # Tasks
