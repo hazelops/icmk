@@ -39,15 +39,17 @@ terraform.init: gomplate terraform
 	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
-
-# Re-initialization of the backend to TF v0.13 version format
-terraform.reconfig:
-			@ \
-			cd $(ENV_DIR) && \
-			$(TERRAFORM) init -input=true -reconfigure
 # TODO: Potentionally replace gomplate by terragrunt
 # TODO:? Implement -target approach so we can deploy specific apps only
 # TODO: generate env vars into tfvars in only one task
+
+# Re-initialization of the backend to TF v0.13 version format
+terraform.reconfig:
+	@ \
+	cd $(ENV_DIR) && \
+	$(TERRAFORM) init -input=true -reconfigure
+
+# Upgrading TF from v0.12 to v0.13
 terraform.13upgrade:
 	@ echo "Terraform upgrade to v0.13 :"
 	@ echo "-----------------------------"
