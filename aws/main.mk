@@ -13,7 +13,7 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFI
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
 # This can be overriden for different args, like setting an endpoint, like localstack
 AWS_ARGS ?= $(AWS_LOCALSTACK_ARG)
-LOCALSTACK_IMAGE ?= localstack/localstack-full
+LOCALSTACK_IMAGE ?= localstack/localstack
 LOCALSTACK_VERSION ?= latest
 LOCALSTACK_ENDPOINT ?= http://localhost:4566
 LOCALSTACK_WEB_UI_PORT ?= 8088
