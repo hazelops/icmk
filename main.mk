@@ -24,7 +24,7 @@ ICMK_TEMPLATE_TERRAFORM_TFPLAN = $(INFRA_DIR)/icmk/terraform/templates/terraform
 ENV ?= $(AWS_DEV_ENV_NAME)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 PROJECT_PATH ?= projects/$(SVC)
-
+SERVICE_NAME ?= $(ENV)-$(SVC)
 # Tasks
 ########################################################################################################################
 .PHONY: auth help
