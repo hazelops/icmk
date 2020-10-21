@@ -60,7 +60,7 @@ The only dependencies you'd need:
 - Docker
 
 # Disclaimer
-This framework is inspired by the principles of delivering a good Runner Experience. It is provided as-is.
+This framework is inspired by the principles of delivering a good [Runner Experience](https://automationd.com/runner-experience-design/). It is provided as-is.
 
 \*This is nothing close to a complete framework: lots of features are still missing, naming and structuring can be improved. Even though it works, use it on your own risk. PRs are welcome! 
 
