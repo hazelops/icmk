@@ -18,21 +18,20 @@ LOCALSTACK_VERSION ?= latest
 LOCALSTACK_ENDPOINT ?= http://$(LOCALSTACK_CONTAINER_IP):4566
 LOCALSTACK_WEB_UI_PORT ?= 8088
 LOCALSTACK_PORTS ?= "4565-4585"
-LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,acm,ec2,route53" #etc. serverless? api-gateway?
-AWS_LOCALSTACK_ARG ?= $(shell echo $$([ "$(ENABLE_LOCALSTACK)" = "1" ] && echo "--endpoint-url=http://localhost:4566" || "") )
+LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,iam,acm,ec2,route53,ssm" #etc. serverless? api-gateway?
 
-CMD_LOCALSTACK_START ?= @ ( $(DOCKER) run -d --name localstack -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) \
+CMD_LOCALSTACK_UP ?= @ ( $(DOCKER) run -d --name localstack -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) \
 	-p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) \
 	-e SERVICES=$(LOCALSTACK_SERVICE_LIST) \
 	-e DATA_DIR=/tmp/localstack/data \
 	-e PORT_WEB_UI=$(LOCALSTACK_WEB_UI_PORT) \
 	-e DOCKER_HOST=unix:///var/run/docker.sock \
-	-v ${TMPDIR:-/tmp/localstack}:/tmp/localstack \
+	-v /tmp/localstack:/tmp/localstack \
 	$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) > /dev/null) && echo "\033[32m[OK]\033[0m Localstack is UP. \nUse locally: aws --endpoint-url=http://localhost:4566 [options] <command>" || echo "\033[31m[ERROR]\033[0m Localstack start failed"
+CMD_LOCALSTACK_DOWN ?= @ ( $(DOCKER) rm $$($(DOCKER) stop $$($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}")) > /dev/null) && echo "\033[32m[OK]\033[0m Localstack is DOWN." || echo "\033[31m[ERROR]\033[0m Localstack stopping failed"
+
 LOCALSTACK_CONTAINER_IP ?= $$($(DOCKER) inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' localstack)
-CMD_LOCALSTACK_STOP ?= @ ( $(DOCKER) rm $$($(DOCKER) stop $$($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}")) > /dev/null) && echo "\033[32m[OK]\033[0m Localstack is DOWN." || echo "\033[31m[ERROR]\033[0m Localstack stopping failed"
-
-
+AWS_LOCALSTACK_ARG ?= $(shell echo $$([ "$(ENABLE_LOCALSTACK)" = "1" ] && echo "--endpoint-url=http://$(LOCALSTACK_CONTAINER_IP):4566" || "") ) > /dev/null
 
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
 # Tasks
