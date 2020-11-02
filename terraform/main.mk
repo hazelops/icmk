@@ -1,10 +1,13 @@
 # Macroses
 ########################################################################################################################
 SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
+SSH_PUBLIC_KEY_BASE64 = $(shell echo "$(SSH_PUBLIC_KEY)" | $(BASE64))
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 OUTPUT_JSON_FILE = $(INFRA_DIR)/env/$(ENV)/output.json
 TERRAFORM_VERSION ?= "0.12.29"
+
+
 
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
