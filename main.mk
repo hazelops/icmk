@@ -47,6 +47,7 @@ help: ## Display this help screen (default)
 	@echo "\033[32m=== Available Tasks ===\033[0m"
 	@grep -h -E '^([a-zA-Z_-]|\.)+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+env: env.use
 use: env.use
 
 
