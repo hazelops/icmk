@@ -13,6 +13,7 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFI
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail --profile $(AWS_PROFILE) $(SERVICE_NAME) --follow
+CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --profile $(AWS_PROFILE) --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
 
 # Tasks
 ########################################################################################################################
@@ -25,6 +26,10 @@ aws.debug: ## Show environment information for debug purposes
 
 aws.profile:
 	$(shell mkdir -p ~/.aws && echo "[$(AWS_PROFILE)]\naws_access_key_id = $(AWS_ACCESS_KEY_ID)\naws_secret_access_key = $(AWS_SECRET_ACCESS_KEY)\nregion = $(AWS_REGION)" >> ~/.aws/credentials)
+
+aws.key-pair: aws.import-ssh-key
+aws.import-ssh-key:
+	$(CMD_AWS_EC2_IMPORT_KEY_PAIR)
 
 
 # Dependencies
