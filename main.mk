@@ -49,7 +49,7 @@ help: ## Display this help screen (default)
 
 env: env.use
 use: env.use
-
+plan: terraform.plan
 
 ## Tool Dependencies
 DOCKER  ?= $(shell which docker)
