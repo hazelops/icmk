@@ -1,10 +1,10 @@
 # Macroses
 ########################################################################################################################
 SLS_DOCKER_IMAGE ?= amaysim/serverless
-SLS_VERSION ?= 1.73.1
+SLS_VERSION ?= 1.82.0
 SLS_FILE ?= serverless.yml
 EVENT_FILE ?= event.json
-NODE_VERSION ?= 10.22.0-alpine3.9
+NODE_VERSION ?= 12-alpine3.10
 
 # Docker executors
 ########################################################################################################################
