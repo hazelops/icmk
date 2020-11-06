@@ -54,11 +54,13 @@ plan: terraform.plan
 ## Tool Dependencies
 DOCKER  ?= $(shell which docker)
 COMPOSE ?= $(shell which docker-compose)
+BUSYBOX_VERSION ?= 1.31.1
 
 JQ ?= $(DOCKER) run -i colstrom/jq
-CUT ?= $(DOCKER) run -i busybox:1.31.1 cut
-REV ?= $(DOCKER) run -i busybox:1.31.1 rev
-BASE64 ?= $(DOCKER) run -i busybox:1.31.1 base64
+CUT ?= $(DOCKER) run -i busybox:$(BUSYBOX_VERSION) cut
+REV ?= $(DOCKER) run -i busybox:$(BUSYBOX_VERSION) rev
+BASE64 ?= $(DOCKER) run -i busybox:$(BUSYBOX_VERSION) base64
+AWK ?= $(DOCKER) run -i busybox:$(BUSYBOX_VERSION) awk
 
 
 GOMPLATE ?= $(DOCKER) run \
