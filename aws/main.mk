@@ -25,11 +25,11 @@ LINUX_DISTRIB_TEMP ?= $$(echo $$([ "$(OS_DISTRIB)" = "Ubuntu" ] && echo "ubuntu"
 LINUX_DISTRIB ?= $$(echo $(LINUX_DISTRIB_TEMP) | xargs)
 LINUX_PACKAGE_EXT ?= $$(echo $$([ "$(OS_DISTRIB)" = "Ubuntu" ] && echo ".deb" || echo ".rpm")) #> /dev/null
 # Download Session Manager cmds
-SSM_DOWNLOAD_FOR_MAC_OS ?= curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" -o "sessionmanager-bundle.zip" && unzip sessionmanager-bundle.zip
-SSM_DOWNLOAD_FOR_LINUX_OS ?= curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/$(LINUX_DISTRIB)_$(ARCH)/session-manager-plugin$(LINUX_PACKAGE_EXT)" -o "session-manager-plugin$(LINUX_PACKAGE_EXT)"
+SSM_DOWNLOAD_FOR_MAC_OS ?= curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" > "sessionmanager-bundle.zip" && unzip -qq sessionmanager-bundle.zip
+SSM_DOWNLOAD_FOR_LINUX_OS ?= curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/$(LINUX_DISTRIB)_$(ARCH)/session-manager-plugin$(LINUX_PACKAGE_EXT)" > "session-manager-plugin$(LINUX_PACKAGE_EXT)"
 SSM_DOWNLOAD ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_DOWNLOAD_FOR_LINUX_OS)"; else echo "$(SSM_DOWNLOAD_FOR_MAC_OS)"; fi))
 # Installation Session Manager cmds
-LINUX_INSTALLER ?= $(shell echo $$(if [ "$(OS_DISTRIB)" = "Ubuntu" ]; then echo "sudo dpkg -i"; else echo "sudo yum install -y"; fi))
+LINUX_INSTALLER ?= $$(echo $$(if [ "$(OS_DISTRIB)" = "Ubuntu" ]; then echo "sudo dpkg -i"; else echo "sudo yum install -y -q"; fi))
 SSM_INSTALL_ON_MAC_OS ?= sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
 SSM_INSTALL_ON_LINUX_OS ?= $(LINUX_INSTALLER) session-manager-plugin$(LINUX_PACKAGE_EXT)
 SSM_INSTALL ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_INSTALL_ON_LINUX_OS)"; else echo "$(SSM_INSTALL_ON_MAC_OS)"; fi))
@@ -59,7 +59,7 @@ aws.import-ssh-key:
 # Install AWS SSM Session Manager plugin
 ssm-plugin: ssm-plugin.download ssm-plugin.install ssm-plugin.check
 ssm-plugin.download:
-	$(SSM_DOWNLOAD)
+	@$(SSM_DOWNLOAD)
 ssm-plugin.install:
 	@$(SSM_INSTALL)
 	@$(SSM_CLEANUP)
