@@ -27,18 +27,18 @@ LINUX_PACKAGE_EXT ?= $$(echo $$([ "$(OS_DISTRIB)" = "Ubuntu" ] && echo ".deb" ||
 # Download Session Manager cmds
 SSM_DOWNLOAD_FOR_MAC_OS ?= curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" > "sessionmanager-bundle.zip" && unzip -qq sessionmanager-bundle.zip
 SSM_DOWNLOAD_FOR_LINUX_OS ?= curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/$(LINUX_DISTRIB)_$(ARCH)/session-manager-plugin$(LINUX_PACKAGE_EXT)" > "session-manager-plugin$(LINUX_PACKAGE_EXT)"
-SSM_DOWNLOAD ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_DOWNLOAD_FOR_LINUX_OS)"; else echo "$(SSM_DOWNLOAD_FOR_MAC_OS)"; fi))
+CMD_SSM_DOWNLOAD ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_DOWNLOAD_FOR_LINUX_OS)"; else echo "$(SSM_DOWNLOAD_FOR_MAC_OS)"; fi))
 # Installation Session Manager cmds
 LINUX_INSTALLER ?= $$(echo $$(if [ "$(OS_DISTRIB)" = "Ubuntu" ]; then echo "sudo dpkg -i"; else echo "sudo yum install -y -q"; fi))
 SSM_INSTALL_ON_MAC_OS ?= sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
 SSM_INSTALL_ON_LINUX_OS ?= $(LINUX_INSTALLER) session-manager-plugin$(LINUX_PACKAGE_EXT)
-SSM_INSTALL ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_INSTALL_ON_LINUX_OS)"; else echo "$(SSM_INSTALL_ON_MAC_OS)"; fi))
+CMD_SSM_INSTALL ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_INSTALL_ON_LINUX_OS)"; else echo "$(SSM_INSTALL_ON_MAC_OS)"; fi))
 # Cleanup Session Manager installation package
 SSM_CLEANUP_ON_MAC_OS ?= rm -rf sessionmanager-bundle sessionmanager-bundle.zip
 SSM_CLEANUP_ON_LINUX_OS ?= rm -rf session-manager-plugin$(LINUX_PACKAGE_EXT)
-SSM_CLEANUP ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_CLEANUP_ON_LINUX_OS)"; else echo "$(SSM_CLEANUP_ON_MAC_OS)"; fi))
+CMD_SSM_CLEANUP ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_CLEANUP_ON_LINUX_OS)"; else echo "$(SSM_CLEANUP_ON_MAC_OS)"; fi))
 # Post-install Session Manager check
-SSM_POST_INSTALL_CHECK = $(shell session-manager-plugin)
+CMD_SSM_POST_INSTALL_CHECK = $(shell session-manager-plugin)
 
 # Tasks
 ########################################################################################################################
@@ -59,12 +59,12 @@ aws.import-ssh-key:
 # Install AWS SSM Session Manager plugin
 ssm-plugin: ssm-plugin.download ssm-plugin.install ssm-plugin.check
 ssm-plugin.download:
-	@$(SSM_DOWNLOAD)
+	@$(CMD_SSM_DOWNLOAD)
 ssm-plugin.install:
-	@$(SSM_INSTALL)
-	@$(SSM_CLEANUP)
+	@$(CMD_SSM_INSTALL)
+	@$(CMD_SSM_CLEANUP)
 ssm-plugin.check:
-ifeq (, $(SSM_POST_INSTALL_CHECK))
+ifeq (, $(CMD_SSM_POST_INSTALL_CHECK))
 	@echo "\033[31m[FAILED]\033[0m SSM Session Manager Plugin is not installed or incorrectly configured.\nPlease go to https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html and install manually"
 else
 	@echo "\n\033[32m[OK]\033[0m SSM Session Manager Plugin is installed."
