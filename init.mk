@@ -3,7 +3,7 @@
 ROOT_DIR ?= $(shell pwd)
 INFRA_DIR ?= $(ROOT_DIR)/.infra
 
-ICMK_VERSION ?= master
+ICMK_VERSION ?= origin/master
 ICMK_REPO ?= https://github.com/hazelops/icmk.git
 
 # Tasks
@@ -24,7 +24,7 @@ icmk.clean:
 	@rm -rf $(INFRA_DIR)/icmk && echo "Cleaning Done"
 
 icmk.update:
-	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset $(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION) && git pull origin $(ICMK_VERSION)
+	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset origin/$(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION)
 
 examples.simple: confirm $(INFRA_DIR)/icmk
 	@cp $(INFRA_DIR)/icmk/examples/simple/Makefile ./Makefile
