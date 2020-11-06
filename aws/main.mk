@@ -17,19 +17,19 @@ CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY
 
 # Getting OS|Linux info
 OS_NAME ?= $(shell uname -s)
-OS_DISTRIB ?= cat /etc/*-release | grep "DISTRIB_ID=" | sed 's/DISTRIB_ID=//'
-LINUX_CPU_VENDOR ?= lscpu | grep "Vendor ID:"
+OS_DISTRIB ?= $$(cat /etc/*-release | grep "DISTRIB_ID=" | sed 's/DISTRIB_ID=//')
+LINUX_CPU_VENDOR ?= $$(lscpu | grep "Vendor ID:")
 LINUX_ARCH ?= $(shell uname -m | sed 's/x86_//;s/i[3-6]86/32/')
-ARCH ?= $(shell echo $$(if echo $(shell $(LINUX_CPU_VENDOR)) | grep -Fqe "Intel"; then echo "$(LINUX_ARCH)bit"; else echo "arm$(LINUX_ARCH)"; fi))
-LINUX_DISTRIB_TEMP ?= $(shell echo $$([ $(shell $(OS_DISTRIB)) = "Ubuntu" ] && echo "ubuntu" || echo "linux")) #> /dev/null
+ARCH ?= $(shell echo $$(if echo "$(LINUX_CPU_VENDOR)" | grep -Fqe "Intel"; then echo "$(LINUX_ARCH)bit"; else echo "arm$(LINUX_ARCH)"; fi))
+LINUX_DISTRIB_TEMP ?= $(shell echo $$([ "$(OS_DISTRIB)" = "Ubuntu" ] && echo "ubuntu" || echo "linux")) #> /dev/null
 LINUX_DISTRIB ?= $(shell echo $(LINUX_DISTRIB_TEMP) | xargs)
-LINUX_PACKAGE_EXT ?= $(shell echo $$([ $(shell $(OS_DISTRIB)) = "Ubuntu" ] && echo ".deb" || echo ".rpm")) #> /dev/null
+LINUX_PACKAGE_EXT ?= $(shell echo $$([ "$(OS_DISTRIB)" = "Ubuntu" ] && echo ".deb" || echo ".rpm")) #> /dev/null
 # Download Session Manager cmds
 SSM_DOWNLOAD_FOR_MAC_OS ?= curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" -o "sessionmanager-bundle.zip" && unzip sessionmanager-bundle.zip
 SSM_DOWNLOAD_FOR_LINUX_OS ?= curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/$(LINUX_DISTRIB)_$(ARCH)/session-manager-plugin$(LINUX_PACKAGE_EXT)" -o "session-manager-plugin$(LINUX_PACKAGE_EXT)"
 SSM_DOWNLOAD ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_DOWNLOAD_FOR_LINUX_OS)"; else echo "$(SSM_DOWNLOAD_FOR_MAC_OS)"; fi))
 # Installation Session Manager cmds
-LINUX_INSTALLER ?= $(shell echo $$(if [ $(shell $(OS_DISTRIB)) = "Ubuntu" ]; then echo "sudo dpkg -i"; else echo "sudo yum install -y"; fi))
+LINUX_INSTALLER ?= $(shell echo $$(if [ "$(OS_DISTRIB)" = "Ubuntu" ]; then echo "sudo dpkg -i"; else echo "sudo yum install -y"; fi))
 SSM_INSTALL_ON_MAC_OS ?= sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
 SSM_INSTALL_ON_LINUX_OS ?= $(LINUX_INSTALLER) session-manager-plugin$(LINUX_PACKAGE_EXT)
 SSM_INSTALL ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_INSTALL_ON_LINUX_OS)"; else echo "$(SSM_INSTALL_ON_MAC_OS)"; fi))
