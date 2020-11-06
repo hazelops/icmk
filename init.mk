@@ -23,8 +23,12 @@ $(INFRA_DIR)/icmk:
 icmk.clean:
 	@rm -rf $(INFRA_DIR)/icmk && echo "Cleaning Done"
 
-icmk.update:
+icmk.update: ## Updates ICMK
 	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset origin/$(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION)
+
+icmk.update-init: ## Updates ICMK with a remote init script
+	@echo Updating via new init from https://hzl.xyz/icmk
+	@make icmk.update -f $$(curl -Ls https://hzl.xyz/icmk > $$TMPDIR/icmk.mk && echo "$$TMPDIR/icmk.mk")
 
 examples.simple: confirm $(INFRA_DIR)/icmk
 	@cp $(INFRA_DIR)/icmk/examples/simple/Makefile ./Makefile
