@@ -1,5 +1,5 @@
 # Infrastructure as Code Make Framework
-![[tests] Run unit tests and specs](https://github.com/hazelops/icmk/workflows/%5Btests%5D%20Run%20unit%20tests%20and%20specs/badge.svg?branch=master)
+![tests](https://github.com/hazelops/icmk/workflows/%5Btests%5D%20Run%20unit%20tests%20and%20specs/badge.svg?branch=master)
 
 This framework is an attempt to create a convenient way to manage Infrastructure as Code with low barrier of entry for the Runner.
 
