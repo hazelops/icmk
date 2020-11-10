@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04, macos-10.15]
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
     steps:
 
       - name: Checkout Code
@@ -30,8 +30,11 @@ jobs:
       - name: Show OS Debug Info
         run: make os.debug
 
-      - name: Show env Debug Info
-        run: make env.debug
+      - name: Show ICMK Debug Info
+        run: make icmk.debug
+
+      - name: Show AWS Debug Info
+        run: make aws.debug
 
       - name: Install SSM Plugin
         run: make ssm-plugin
