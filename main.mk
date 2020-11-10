@@ -29,7 +29,9 @@ SERVICE_NAME ?= $(ENV)-$(SVC)
 ########################################################################################################################
 .PHONY: auth help
 all: help
-env.debug: aws.debug
+
+env.debug: icmk.debug aws.debug os.debug
+icmk.debug:
 	@echo "\033[32m=== ICMK Info ===\033[0m"
 	@echo "\033[36mENV\033[0m: $(ENV)"
 	@echo "\033[36mTAG\033[0m: $(TAG)"

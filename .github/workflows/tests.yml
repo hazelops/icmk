@@ -1,0 +1,41 @@
+name: "[tests] Run unit tests and specs"
+defaults:
+  run:
+    shell: bash
+    working-directory: ./examples/simple
+env:
+  AWS_PROFILE: default
+  AWS_REGION: us-east-1
+  ENV: testnut
+  SSH_PUBLIC_KEY: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/aYdKsVZpBnLkvNA/AKLFHG+NBxUbPgCCeipedMQZqzv8hyQZAwyeVVD8w8yA/fFWmVBIu2Ww9UTtlknF7DmpFoXJGd+cOO5y7YOojS5OHVS4OJ35FR+oihW63o8Sv6N12HKKpDSLQQcUbxmHepkN6r/n2IIhdmQgTXKe06OxXYozsl3FsONtrTdI+5v114UzQx4zpG1bmDC9DRJO1s5FY062YjQXSMUDzdd9gP/o7yivunAGZjfEFcItVUjAWux53LIGjaNBBXUA5YtL08p40CxOX4k+Tz686SmbROP8ORCA5HOEYRfk5uuELhhS1+mipAJqgb40PMZlrcrpHUTqnanxxiGcXHVofzw7StaCI9ITdrMArmGIYD+gphSbW9HptF+6oBw8zB9n++T/vI+CvWf5ee+7MqbQPKlZgutS9QMhUnsCtNeuhLS9sNQO59KL4sEzpks3Cr+OlBj+Ib6pH3/S6HBp7mVoXnrQrW26f+O70QK3Y38XEZNQNJNjqG8= testnut-nutcorp"
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  regressions:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Show OS Debug Info
+        run: make os.debug
+
+      - name: Show ICMK Debug Info
+        run: make icmk.debug
+
+      - name: Show AWS Debug Info
+        run: make aws.debug
+
+      - name: Install SSM Plugin
+        run: make ssm-plugin
+
