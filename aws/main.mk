@@ -49,6 +49,14 @@ aws.debug: ## Show environment information for debug purposes
 	@echo "\033[36mAWS_PROFILE\033[0m: $(AWS_PROFILE)"
 	@echo "\033[36mAWS_USER\033[0m: $(AWS_USER)"
 
+os.debug:
+	@echo "\033[32m=== System Info ===\033[0m"
+	@echo "\033[36mOS_NAME\033[0m: $(OS_NAME)"
+	@echo "\033[36mOS_DISTRIB\033[0m: $(OS_DISTRIB)"
+	@echo "\033[36mLINUX_ARCH\033[0m: $(LINUX_ARCH)"
+	@echo "\033[36mARCH\033[0m: $(ARCH)"
+
+
 aws.profile:
 	$(shell mkdir -p ~/.aws && echo "[$(AWS_PROFILE)]\naws_access_key_id = $(AWS_ACCESS_KEY_ID)\naws_secret_access_key = $(AWS_SECRET_ACCESS_KEY)\nregion = $(AWS_REGION)" >> ~/.aws/credentials)
 
@@ -69,7 +77,7 @@ ifeq (, $(CMD_SSM_POST_INSTALL_CHECK))
 else
 	@echo "\n\033[32m[OK]\033[0m SSM Session Manager Plugin is installed."
 endif
-	
+
 # Dependencies
 ########################################################################################################################
 # TODO: Add validation for ability to connect to AWS

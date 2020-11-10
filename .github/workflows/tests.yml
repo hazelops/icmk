@@ -14,18 +14,24 @@ on:
   pull_request:
 
 jobs:
-  make-regression:
+  regressions:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04, macos-10.15, windows-2019]
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04, macos-10.15]
     steps:
 
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
           submodules: true
+
+      - name: Show OS Debug Info
+        run: make os.debug
+
+      - name: Show env Debug Info
+        run: make env.debug
 
       - name: Install SSM Plugin
         run: make ssm-plugin
