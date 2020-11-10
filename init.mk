@@ -24,7 +24,7 @@ icmk.clean:
 	@rm -rf $(INFRA_DIR)/icmk && echo "Cleaning Done"
 
 icmk.update: ## Updates ICMK
-	@[ -d "$(INFRA_DIR)/icmk" ] && (cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset $(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION)) || echo "No ICMK installed. Please install it first." && exit 1
+	@[ -d "$(INFRA_DIR)/icmk" ] && (cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset $(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION)) || (echo "No ICMK installed. Please install it first." && exit 1)
 
 icmk.update-init: ## Updates ICMK with a remote init script
 	@echo Updating via new init from https://hzl.xyz/icmk

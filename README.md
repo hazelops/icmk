@@ -37,7 +37,7 @@ This won't create:
 - Anything else.
 
 ```shell script
-make examples.simple
+make examples.simple -f .infra/icmk/init.mk
 ```
 
 # Whats Wrong With Shell Scripts?
