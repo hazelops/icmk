@@ -27,6 +27,10 @@ make init -f $(curl -Ls https://hzl.xyz/icmk > $TMPDIR/icmk.mk && echo "$TMPDIR/
 ```
 
 ## Populate sample config
+```shell script
+make examples.simple -f .infra/icmk/init.mk
+```
+
 This will create the following:
 - Sample `Makefile`, which you can (and should) customize
 - Sample .envrc (which you can use with [direnv](https://github.com/direnv/direnv))
@@ -36,9 +40,6 @@ This will create the following:
 This won't create:
 - Anything else.
 
-```shell script
-make examples.simple -f .infra/icmk/init.mk
-```
 
 # Whats Wrong With Shell Scripts?
 Shell scripts do the job, but eventually they loose the coherency by turning into bash spaghetti. Makefiles are declarative and have ability to have dependencies. Also, GNU Make can be modular, which allows to build good Runner Experience with abstractions. There is more, but if this is not enough, feel free to submit a Github Issue with any questions or concerns.
