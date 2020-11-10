@@ -108,15 +108,15 @@ jobs:
         run: make aws.debug
 
 
-  update-to-1_2_1:
-    name: Update to 1.2.1
+  update-to-2_0_0:
+    name: Update to 2.0.0
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
     env:
-      ICMK_VERSION: tags/1.2.1
+      ICMK_VERSION: tags/2.0.0
     steps:
 
       - name: Checkout Code
