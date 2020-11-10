@@ -8,7 +8,7 @@ CMD_BASTION_SSH_TUNNEL_CONFIG_CREATE = echo $(shell $(AWS) --profile=$(AWS_PROFI
 CMD_BASTION_SSH_TUNNEL_UP = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -r '.cmd.value.tunnel.up') -F $(SSH_CONFIG)
 CMD_BASTION_SSH_TUNNEL_DOWN = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -r '.cmd.value.tunnel.down') -F $(SSH_CONFIG) && echo "SSH tunnel disabled"
 CMD_BASTION_SSH_TUNNEL_STATUS = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -r '.cmd.value.tunnel.status') -F $(SSH_CONFIG) && echo "SSH tunnel is up with the following config:\n-----" && cat $(SSH_CONFIG)
-CMD_BASTION_SSH_TUNNEL_SSH_KEY_PUSH = $(shell $(AWS) --profile $(AWS_PROFILE) ssm send-command --instance-ids $(BASTION_INSTANCE_ID) --document-name AWS-RunShellScript --comment 'Add an SSH public key to authorized_keys' --parameters commands='echo $(SSH_PUBLIC_KEY) >> /home/ubuntu/.ssh/authorized_keys')
+CMD_BASTION_SSH_TUNNEL_SSH_KEY_ENSURE_PRESENT = ($(AWS) --profile $(AWS_PROFILE) ssm send-command --instance-ids $(BASTION_INSTANCE_ID) --document-name AWS-RunShellScript --comment 'Add an SSH public key to authorized_keys' --parameters '{"commands": ["grep -qR \"$(SSH_PUBLIC_KEY)\" /home/ubuntu/.ssh/authorized_keys || echo \"$(SSH_PUBLIC_KEY)\" >> /home/ubuntu/.ssh/authorized_keys"]}' 1> /dev/null) && echo "\n\033[32m[OK]\033[0m SSH Key"
 
 # Tasks
 ########################################################################################################################
@@ -22,10 +22,11 @@ tunnel.down:
 tunnel.status:
 	@$(CMD_BASTION_SSH_TUNNEL_STATUS)
 
-tunnel.ssh-key-push:
-	@$(CMD_BASTION_SSH_TUNNEL_PUSH_SSH_KEY)
-tunnel.config: tunnel.ssh-key-push
-	@$(CMD_BASTION_SSH_TUNNEL_CONFIG_CREATE)
+tunnel.ssh-key:
+	@$(CMD_BASTION_SSH_TUNNEL_SSH_KEY_ENSURE_PRESENT)
+
+tunnel.config: tunnel.ssh-key
+	$(CMD_BASTION_SSH_TUNNEL_CONFIG_CREATE)
 
 # Dependencies
 ########################################################################################################################
