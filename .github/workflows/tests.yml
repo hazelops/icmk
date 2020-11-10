@@ -1,4 +1,4 @@
-name: "[tests] Run unit tests and specs"
+name: "tests"
 defaults:
   run:
     shell: bash
