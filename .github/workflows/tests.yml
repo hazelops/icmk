@@ -14,18 +14,21 @@ on:
   pull_request:
 
 jobs:
-  regressions:
+  install-ssm-plugin:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
+        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
     steps:
 
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
           submodules: true
+
+      - name: Install SSM Plugin
+        run: make ssm-plugin
 
       - name: Show OS Debug Info
         run: make os.debug
@@ -36,6 +39,100 @@ jobs:
       - name: Show AWS Debug Info
         run: make aws.debug
 
-      - name: Install SSM Plugin
-        run: make ssm-plugin
+  clean-install:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
 
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Create Test directory
+        run: mkdir -p ./test/clean-install
+
+      - name: Clean Install
+        working-directory: ./test/clean-install
+        # Special directory that we use to test a clean install
+        run: make init -f $(cat $GITHUB_WORKSPACE/init.mk > $(pwd)/init.mk && echo "$(pwd)/init.mk")
+
+      - name: Init Examples
+        working-directory: ./test/clean-install
+        run: echo "y" | make examples.simple -f .infra/icmk/init.mk
+
+      - name: Show OS Debug Info
+        working-directory: ./test/clean-install
+        run: make os.debug
+
+      - name: Show ICMK Debug Info
+        working-directory: ./test/clean-install
+        run: make icmk.debug
+
+      - name: Show AWS Debug Info
+        working-directory: ./test/clean-install
+        run: make aws.debug
+
+
+  update-to-master:
+    runs-on: ${{ matrix.os }}
+    name: Update to master
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
+    env:
+      ICMK_VERSION: origin/master
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Update ICMK
+        run: make icmk.update
+
+      - name: Show OS Debug Info
+        run: make os.debug
+
+      - name: Show ICMK Debug Info
+        run: make icmk.debug
+
+      - name: Show AWS Debug Info
+        run: make aws.debug
+
+
+  update-to-1_2_1:
+    name: Update to 1.2.1
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
+    env:
+      ICMK_VERSION: tags/1.2.1
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      # TODO checkout older version, and test upgrade from one to another
+      - name: Update ICMK
+        run: make icmk.update
+
+      - name: Show OS Debug Info
+        run: make os.debug
+
+      - name: Show ICMK Debug Info
+        run: make icmk.debug
+
+      - name: Show AWS Debug Info
+        run: make aws.debug
