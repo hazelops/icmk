@@ -11,7 +11,7 @@ AWS_PROFILE ?= $(NAMESPACE)-$(ENV_BASE)
 AWS_USER ?= $(shell aws --profile=$(AWS_PROFILE) iam get-user | $(JQ) -r ".User.UserName")
 AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
-AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40
+AWS ?= $(DOCKER) run -i --rm -v $(HOME)/.aws/:/root/.aws amazon/aws-cli:2.0.40
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail --profile $(AWS_PROFILE) $(SERVICE_NAME) --follow
 CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --profile $(AWS_PROFILE) --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
 
