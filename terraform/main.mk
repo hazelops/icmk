@@ -1,10 +1,13 @@
 # Macroses
 ########################################################################################################################
 SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
+SSH_PUBLIC_KEY_BASE64 = $(shell echo "$(SSH_PUBLIC_KEY)" | $(BASE64))
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 OUTPUT_JSON_FILE = $(INFRA_DIR)/env/$(ENV)/output.json
 TERRAFORM_VERSION ?= "0.12.29"
+
+
 
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
@@ -13,10 +16,13 @@ TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
-TERRAFORM ?= $(DOCKER) run --rm -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v ~/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hashicorp/terraform:$(TERRAFORM_VERSION)
+TFLOCK ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hazelops/tflock
+TERRAFORM ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hashicorp/terraform:$(TERRAFORM_VERSION)
 
-CMD_SAVE_OUTPUT_TO_SSM = $(AWS) --profile "$(AWS_PROFILE)" ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --tier "Intelligent-Tiering" --data-type "text" --overwrite --value "$$(cat $(OUTPUT_JSON_FILE) | $(BASE64))" > /dev/null && echo "\033[32m[OK]\033[0m Terraform output saved to ssm://$(ENV)/terraform-output" || echo "\033[31m[ERROR]\033[0m Terraform output saving failed"
 
+CMD_SAVE_OUTPUT_TO_SSM = $(AWS) --profile "$(AWS_PROFILE)" ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --tier "Intelligent-Tiering" --data-type "text" --overwrite --value "$$(cat $(OUTPUT_JSON_FILE) | $(BASE64))" > /dev/null && echo "\033[32m[OK]\033[0m Terraform output saved to ssm://$(ENV)/terraform-output" || (echo "\033[31m[ERROR]\033[0m Terraform output saving failed" && exit 1)
+# Optional cmd to be used, because the branch related to TF v0.13 upgrade already have updated versions.tf files
+CMD_TERRAFORM_MODULES_UPGRADE = $(shell find $(INFRA_DIR)/terraform -name '*.tf' | xargs -n1 dirname | uniq | xargs -n1 $(TERRAFORM) 0.13upgrade -yes)
 # Tasks
 ########################################################################################################################
 infra.init: terraform.init
@@ -37,10 +43,27 @@ terraform.init: gomplate terraform
 	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
-
 # TODO: Potentionally replace gomplate by terragrunt
 # TODO:? Implement -target approach so we can deploy specific apps only
 # TODO: generate env vars into tfvars in only one task
+
+terraform.lock: terraform.init
+	@ \
+ 	cd $(ENV_DIR) && \
+ 	$(TFLOCK)
+
+# Re-initialization of the backend to TF v0.13 version format
+terraform.reconfig:
+	@ \
+	cd $(ENV_DIR) && \
+	$(TERRAFORM) init -input=true -reconfigure
+
+# Upgrading TF from v0.12 to v0.13
+terraform.13upgrade:
+	@ echo "Terraform upgrade to v0.13 :"
+	@ echo "-----------------------------"
+	@ $(CMD_TERRAFORM_MODULES_UPGRADE)
+
 terraform.apply: terraform.plan ## Deploy infrastructure
 	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) apply -input=false tfplan && \
@@ -86,6 +109,8 @@ terraform.plan: terraform.init ## Terraform plan output for Github Action
 	$(TERRAFORM) plan -out=tfplan -input=false && \
 	$(TERRAFORM) show tfplan -input=false -no-color > $(ENV_DIR)/tfplan.txt && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/tfplan.md
+
+
 
 env.use: terraform jq
 	@ [ -e $(ENV_DIR) ] && \

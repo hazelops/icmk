@@ -1,7 +1,7 @@
 NAMESPACE = nutcorp
 ICMK_VERSION ?= master
 
-include .infra/icmk/*.mk
+include .infra/icmk/init.mk
 
 deploy: infra.deploy app.deploy
 destroy: infra.destroy

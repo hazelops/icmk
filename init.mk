@@ -3,7 +3,7 @@
 ROOT_DIR ?= $(shell pwd)
 INFRA_DIR ?= $(ROOT_DIR)/.infra
 
-ICMK_VERSION ?= master
+ICMK_VERSION ?= origin/master
 ICMK_REPO ?= https://github.com/hazelops/icmk.git
 
 # Tasks
@@ -23,8 +23,12 @@ $(INFRA_DIR)/icmk:
 icmk.clean:
 	@rm -rf $(INFRA_DIR)/icmk && echo "Cleaning Done"
 
-icmk.update:
-	cd $(INFRA_DIR)/icmk && $(GIT) fetch --all && $(GIT) reset $(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION) && git pull origin $(ICMK_VERSION)
+icmk.update: ## Updates ICMK
+	@[ -d "$(INFRA_DIR)/icmk" ] && (cd $(INFRA_DIR)/icmk && $(GIT) fetch --all --tags && $(GIT) reset $(ICMK_VERSION) --hard && $(GIT) checkout $(ICMK_VERSION)) || (echo "No ICMK installed. Please install it first." && exit 1)
+
+icmk.update-init: ## Updates ICMK with a remote init script
+	@echo Updating via new init from https://hzl.xyz/icmk
+	@make icmk.update -f $$(curl -Ls https://hzl.xyz/icmk > $$TMPDIR/icmk.mk && echo "$$TMPDIR/icmk.mk")
 
 examples.simple: confirm $(INFRA_DIR)/icmk
 	@cp $(INFRA_DIR)/icmk/examples/simple/Makefile ./Makefile

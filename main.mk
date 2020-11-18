@@ -25,12 +25,14 @@ ICMK_TEMPLATE_TERRAFORM_TFPLAN = $(INFRA_DIR)/icmk/terraform/templates/terraform
 ENV ?= $(AWS_DEV_ENV_NAME)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 PROJECT_PATH ?= projects/$(SVC)
-
+SERVICE_NAME ?= $(ENV)-$(SVC)
 # Tasks
 ########################################################################################################################
 .PHONY: auth help
 all: help
-env.debug: aws.debug
+
+env.debug: icmk.debug aws.debug os.debug
+icmk.debug:
 	@echo "\033[32m=== ICMK Info ===\033[0m"
 	@echo "\033[36mENV\033[0m: $(ENV)"
 	@echo "\033[36mTAG\033[0m: $(TAG)"
@@ -48,17 +50,20 @@ help: ## Display this help screen (default)
 	@echo "\033[32m=== Available Tasks ===\033[0m"
 	@grep -h -E '^([a-zA-Z_-]|\.)+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+env: env.use
 use: env.use
-
+plan: terraform.plan
 
 ## Tool Dependencies
 DOCKER  ?= $(shell which docker)
 COMPOSE ?= $(shell which docker-compose)
+BUSYBOX_VERSION ?= 1.31.1
 
-JQ ?= $(DOCKER) run -i colstrom/jq
-CUT ?= $(DOCKER) run -i busybox:1.31.1 cut
-REV ?= $(DOCKER) run -i busybox:1.31.1 rev
-BASE64 ?= $(DOCKER) run -i busybox:1.31.1 base64
+JQ ?= $(DOCKER) run -i --rm colstrom/jq
+CUT ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) cut
+REV ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) rev
+BASE64 ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) base64
+AWK ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) awk
 
 
 GOMPLATE ?= $(DOCKER) run \
@@ -77,6 +82,9 @@ GOMPLATE ?= $(DOCKER) run \
 	-e TERRAFORM_STATE_REGION="$(TERRAFORM_STATE_REGION)" \
 	-e TERRAFORM_STATE_PROFILE="$(TERRAFORM_STATE_PROFILE)" \
 	-e TERRAFORM_STATE_DYNAMODB_TABLE="$(TERRAFORM_STATE_DYNAMODB_TABLE)" \
+	-e SHORT_SHA="$(SHORT_SHA)" \
+	-e COMMIT_MESSAGE="$(COMMIT_MESSAGE)" \
+	-e GITHUB_ACTOR="$(GITHUB_ACTOR)" \
 	-v $(ENV_DIR):/temp \
 	--rm -i hairyhenderson/gomplate
 

@@ -5,7 +5,7 @@ TAG_LATEST ?= $(ENV)-latest
 
 SCALE ?= 3
 ECS_CLUSTER_NAME ?= $(ENV)-$(NAMESPACE)
-ECS_SERVICE_NAME ?= $(ENV)-$(SVC)
+ECS_SERVICE_NAME ?= $(SERVICE_NAME)
 ECS_TASK_NAME ?= $(ENV)-$(SVC)
 DOCKER_REGISTRY ?= $(AWS_ACCOUNT).dkr.ecr.$(AWS_REGION).amazonaws.com
 DOCKER_IMAGE_NAME ?= $(NAMESPACE)-$(SVC)
@@ -14,9 +14,11 @@ ECS_DEPLOY_VERSION ?= 1.10.1
 ENABLE_BUILDKIT ?= 1
 ENABLE_INLINE_CACHE ?= $(ENABLE_BUILDKIT)
 DOCKER_BUILD_ADDITIONAL_PARAMS ?=
+DOCKER_RUN_ADDITIONAL_PARAMS ?=
 
-ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
-ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell cat $(INFRA_DIR)/env/$(ENV)/output.json | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
+ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
+ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
+SSM_OUTPUT_JSON = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d)
 
 ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs --profile $(AWS_PROFILE) run-task --cluster $(ECS_CLUSTER_NAME) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" --network-configuration '$(ECS_SERVICE_TASK_NETWORK_CONFIG)' --launch-type "$(ECS_SERVICE_TASK_LAUNCH_TYPE)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV) && sleep 1)
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs --profile $(AWS_PROFILE) describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
@@ -49,15 +51,15 @@ CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 
-CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
+CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
-ECS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
+ECS ?= $(DOCKER) run -i --rm -v $(HOME)/.aws/:/root/.aws fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
 ECS_CLI ?= $(DOCKER) run \
-	-v /var/run/docker.sock:/var/run/docker.sock \
+	-i --rm -v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(HOME)/.aws/:/root/.aws \
 	-e AWS_PROFILE=$(AWS_PROFILE) \
 	-e AWS_REGION=$(AWS_REGION) \
-	-i jexperton/ecs-cli
+	jexperton/ecs-cli
 
 # Tasks
 ########################################################################################################################

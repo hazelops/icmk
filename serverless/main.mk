@@ -1,10 +1,10 @@
 # Macroses
 ########################################################################################################################
 SLS_DOCKER_IMAGE ?= amaysim/serverless
-SLS_VERSION ?= 1.73.1
+SLS_VERSION ?= 1.82.0
 SLS_FILE ?= serverless.yml
 EVENT_FILE ?= event.json
-NODE_VERSION ?= 10.22.0-alpine3.9
+NODE_VERSION ?= 12-alpine3.10
 
 # Docker executors
 ########################################################################################################################
@@ -18,7 +18,10 @@ CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --config $(SLS_FILE) --service $(SVC) --v
 CMD_SLS_SERVICE_INVOKE = $(SLS) invoke --function $(SVC) --path $(EVENT_FILE) --log --config $(SLS_FILE) --service $(SVC) --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
 CMD_SLS_SERVICE_DESTROY = $(SLS) remove --config $(SLS_FILE) --service $(SVC) --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
 CMD_SLS_SERVICE_BUILD = cd $(ROOT_DIR)/$(PROJECT_PATH) && make
-CMD_SLS_SERVICE_SECRETS = $(CMD_SERVICE_SECRETS_PUSH)
+CMD_SLS_SERVICE_SECRETS_PUSH = $(CMD_SERVICE_SECRETS_PUSH)
+# This works with "serverless-domain-manager" plugin and provide domain creation and remove
+CMD_SLS_SERVICE_CREATE_DOMAIN = $(SLS) create_domain --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
+CMD_SLS_SERVICE_DELETE_DOMAIN = $(SLS) delete_domain --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
 
 # Tasks
 ########################################################################################################################

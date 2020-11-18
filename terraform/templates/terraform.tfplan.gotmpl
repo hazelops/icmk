@@ -1,4 +1,7 @@
-### Terraform Changes
+### Terraform Changes {{if .Env.SHORT_SHA }}({{ .Env.SHORT_SHA }}) by {{end}}{{if .Env.GITHUB_ACTOR }}<a href="https://github.com/{{ .Env.GITHUB_ACTOR }}">{{ .Env.GITHUB_ACTOR }}</a>{{end}}
+
+{{if .Env.COMMIT_MESSAGE }}On commit: {{ .Env.COMMIT_MESSAGE }}{{end}}
+
 <details><summary>Expand to view details</summary><p>
 
 ```
