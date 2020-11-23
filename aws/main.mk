@@ -19,8 +19,7 @@ LOCALSTACK_VERSION ?= latest
 LOCALSTACK_ENDPOINT ?= http://$(LOCALSTACK_CONTAINER_IP):4566
 LOCALSTACK_WEB_UI_PORT ?= 8088
 LOCALSTACK_PORTS ?= "4565-4585"
-LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,iam,acm,ec2,route53,ssm" #etc. serverless? api-gateway?
-
+LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,cloudformation,sts,iam,acm,ec2,route53,ssm,cloudwatch,apigateway" #etc. serverless? api-gateway?
 CMD_LOCALSTACK_UP ?= @ ( $(DOCKER) run -d --name localstack -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) \
 	-p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) \
 	-e SERVICES=$(LOCALSTACK_SERVICE_LIST) \
