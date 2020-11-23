@@ -59,8 +59,6 @@ CMD_SSM_INSTALL ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(S
 SSM_CLEANUP_ON_MAC_OS ?= rm -rf sessionmanager-bundle sessionmanager-bundle.zip
 SSM_CLEANUP_ON_LINUX_OS ?= rm -rf session-manager-plugin$(LINUX_PACKAGE_EXT)
 CMD_SSM_CLEANUP ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_CLEANUP_ON_LINUX_OS)"; else echo "$(SSM_CLEANUP_ON_MAC_OS)"; fi))
-# Post-install Session Manager check
-CMD_SSM_POST_INSTALL_CHECK = session-manager-plugin
 
 # Tasks
 ########################################################################################################################
@@ -96,7 +94,7 @@ ssm-plugin.install:
 	@$(CMD_SSM_INSTALL)
 	@$(CMD_SSM_CLEANUP)
 ssm-plugin.check:
-ifeq (, $(shell $(CMD_SSM_POST_INSTALL_CHECK)))
+ifeq (, $(shell which session-manager-plugin))
 	@echo "\033[31m[FAILED]\033[0m SSM Session Manager Plugin is not installed or incorrectly configured.\nPlease go to https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html and install manually"
 else
 	@echo "\n\033[32m[OK]\033[0m SSM Session Manager Plugin is installed."
