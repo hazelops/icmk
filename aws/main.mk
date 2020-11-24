@@ -13,7 +13,6 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFI
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
 
 # This can be overriden for different args, like setting an endpoint, like localstack
-AWS_ARGS ?= $(AWS_LOCALSTACK_ARG)
 LOCALSTACK_IMAGE ?= localstack/localstack
 LOCALSTACK_VERSION ?= latest
 LOCALSTACK_ENDPOINT ?= http://$(LOCALSTACK_CONTAINER_IP):4566
@@ -30,8 +29,8 @@ CMD_LOCALSTACK_UP ?= @ ( $(DOCKER) run -d --name localstack -p $(LOCALSTACK_WEB_
 	$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) > /dev/null) && echo "\033[32m[OK]\033[0m Localstack is UP. \nUse locally: aws --endpoint-url=http://localhost:4566 [options] <command>" || echo "\033[31m[ERROR]\033[0m Localstack start failed"
 CMD_LOCALSTACK_DOWN ?= @ ( $(DOCKER) rm $$($(DOCKER) stop $$($(DOCKER) ps -a -q --filter ancestor=$(LOCALSTACK_IMAGE):$(LOCALSTACK_VERSION) --format="{{.ID}}")) > /dev/null) && echo "\033[32m[OK]\033[0m Localstack is DOWN." || echo "\033[31m[ERROR]\033[0m Localstack stopping failed"
 
-LOCALSTACK_CONTAINER_IP ?= $$($(DOCKER) inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' localstack)
-AWS_LOCALSTACK_ARG ?= $(shell echo $$([ "$(ENABLE_LOCALSTACK)" = "1" ] && echo "--endpoint-url=http://$(LOCALSTACK_CONTAINER_IP):4566" || "") ) > /dev/null
+LOCALSTACK_CONTAINER_IP ?= $$($(DOCKER) inspect --format='{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' localstack)
+AWS_ARGS ?= $$(echo $$(if [ "$(ENABLE_LOCALSTACK)" = "1" ]; then echo "--endpoint-url=http://$(LOCALSTACK_CONTAINER_IP):4566"; else echo ""; fi))
 
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail --profile $(AWS_PROFILE) $(SERVICE_NAME) --follow
