@@ -1,4 +1,4 @@
-{{if (.Env.ENABLE_LOCALSTACK | strings.Contains "1")}}
+{{if (.Env.ENV | strings.Contains "localstack")}}
 terraform {
   backend "local" {}
 }

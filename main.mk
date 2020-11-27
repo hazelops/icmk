@@ -15,7 +15,6 @@ SVC = $(shell echo $(@) | $(CUT) -d. -f1 )
 SVC_TYPE = $(shell echo $(SVC) | $(CUT) -d- -f1 )
 ENV_BASE = dev
 NPM_TOKEN ?= nil
-ENABLE_LOCALSTACK ?= 0
 
 ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG = $(INFRA_DIR)/icmk/terraform/templates/backend.tf.gotmpl
 ICMK_TEMPLATE_TERRAFORM_VARS = $(INFRA_DIR)/icmk/terraform/templates/terraform.tfvars.gotmpl
@@ -75,7 +74,6 @@ GOMPLATE ?= $(DOCKER) run \
 	-e TAG="$(TAG)" \
 	-e SSH_PUBLIC_KEY="$(SSH_PUBLIC_KEY)" \
 	-e DOCKER_REGISTRY="$(DOCKER_REGISTRY)" \
-	-e ENABLE_LOCALSTACK=$(ENABLE_LOCALSTACK) \
 	-e LOCALSTACK_ENDPOINT=$(LOCALSTACK_ENDPOINT) \
 	-e TERRAFORM_STATE_BUCKET_NAME="$(TERRAFORM_STATE_BUCKET_NAME)" \
 	-e TERRAFORM_STATE_KEY="$(TERRAFORM_STATE_KEY)" \

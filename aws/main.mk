@@ -35,7 +35,7 @@ CMD_LOCALSTACK_DOWN ?= @ ( $(DOCKER) rm $$($(DOCKER) stop $$($(DOCKER) ps -a -q 
 
 LOCALSTACK_CONTAINER_IP ?= $$($(DOCKER) ps | grep "localstack" > /dev/null && echo "$(LOCALSTACK_IP)" || echo "")
 LOCALSTACK_IP ?= $$($(DOCKER) inspect --format='{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' localstack)
-AWS_ARGS ?= $$(if [ "$(ENABLE_LOCALSTACK)" = "1" ] && [ $(LOCALSTACK_CONTAINER_IP) ]; then echo "--endpoint-url=http://$(LOCALSTACK_CONTAINER_IP):4566"; else echo ""; fi)
+AWS_ARGS ?= $$(if [ "$(ENV)" = "localstack" ] && [ $(LOCALSTACK_CONTAINER_IP) ]; then echo "--endpoint-url=http://$(LOCALSTACK_CONTAINER_IP):4566"; else echo ""; fi)
 
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail --profile $(AWS_PROFILE) $(SERVICE_NAME) --follow
