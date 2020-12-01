@@ -43,19 +43,19 @@ CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY
 
 # Getting OS|Linux info
 OS_NAME ?= $(shell uname -s)
-LINUX_DISTRIB ?= $$(cat /etc/issue)
+LINUX_OS_DISTRIB ?= $$(cat /etc/issue)
 LINUX_ARCH ?= $(shell uname -m)
 LINUX_BITS ?= $(shell uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 ARCH ?= $$(echo $$(if echo "$(LINUX_ARCH)" | grep -Fqe "arm"; then echo "arm$(LINUX_BITS)"; else echo "$(LINUX_BITS)bit"; fi))
-LINUX_DISTRIB_TEMP ?= $$(echo $$(if echo "$(LINUX_DISTRIB)" | grep -Fqe "Ubuntu"; then echo "ubuntu"; elif echo "$(LINUX_DISTRIB)" | grep -Fqe "Debian"; then echo "ubuntu"; else echo "linux"; fi))
+LINUX_DISTRIB_TEMP ?= $$(echo $$(if echo "$(LINUX_OS_DISTRIB)" | grep -Fqe "Ubuntu"; then echo "ubuntu"; elif echo "$(LINUX_OS_DISTRIB)" | grep -Fqe "Debian"; then echo "ubuntu"; else echo "linux"; fi))
 LINUX_DISTRIB ?= $$(echo $(LINUX_DISTRIB_TEMP) | xargs)
-LINUX_PACKAGE_EXT ?= $$(echo $$(if echo "$(LINUX_DISTRIB)" | grep -Fqe "Ubuntu"; then echo ".deb"; elif echo "$(LINUX_DISTRIB)" | grep -Fqe "Debian"; then echo ".deb"; else echo ".rpm"; fi))
+LINUX_PACKAGE_EXT ?= $$(echo $$(if echo "$(LINUX_OS_DISTRIB)" | grep -Fqe "Ubuntu"; then echo ".deb"; elif echo "$(LINUX_OS_DISTRIB)" | grep -Fqe "Debian"; then echo ".deb"; else echo ".rpm"; fi))
 # Download Session Manager cmds
 SSM_DOWNLOAD_FOR_MAC_OS ?= curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" > "sessionmanager-bundle.zip" && unzip -qq sessionmanager-bundle.zip
 SSM_DOWNLOAD_FOR_LINUX_OS ?= curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/$(LINUX_DISTRIB)_$(ARCH)/session-manager-plugin$(LINUX_PACKAGE_EXT)" > "session-manager-plugin$(LINUX_PACKAGE_EXT)"
 CMD_SSM_DOWNLOAD ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_DOWNLOAD_FOR_LINUX_OS)"; else echo "$(SSM_DOWNLOAD_FOR_MAC_OS)"; fi))
 # Installation Session Manager cmds
-LINUX_INSTALLER ?= $$(echo $$(if echo "$(LINUX_DISTRIB)" | grep -Fqe "Ubuntu"; then echo "sudo dpkg -i"; elif echo "$(LINUX_DISTRIB)" | grep -Fqe "Debian"; then echo "sudo dpkg -i"; else echo "sudo yum install -y -q"; fi))
+LINUX_INSTALLER ?= $$(echo $$(if echo "$(LINUX_OS_DISTRIB)" | grep -Fqe "Ubuntu"; then echo "sudo dpkg -i"; elif echo "$(LINUX_OS_DISTRIB)" | grep -Fqe "Debian"; then echo "sudo dpkg -i"; else echo "sudo yum install -y -q"; fi))
 SSM_INSTALL_ON_MAC_OS ?= sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
 SSM_INSTALL_ON_LINUX_OS ?= $(LINUX_INSTALLER) session-manager-plugin$(LINUX_PACKAGE_EXT)
 CMD_SSM_INSTALL ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_INSTALL_ON_LINUX_OS)"; else echo "$(SSM_INSTALL_ON_MAC_OS)"; fi))
