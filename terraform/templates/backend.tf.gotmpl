@@ -14,6 +14,7 @@ provider "aws" {
 
   endpoints {
     apigateway     = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    acm            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     cloudformation = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     cloudwatch     = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     ec2            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
@@ -33,6 +34,8 @@ provider "aws" {
     ssm            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     stepfunctions  = "{{ .Env.LOCALSTACK_ENDPOINT }}"
     sts            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ecs            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ecr            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
   }
 }
 {{else}}
