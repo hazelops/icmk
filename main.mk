@@ -6,6 +6,7 @@ endif
 
 
 -include $(INFRA_DIR)/env/$(ENV)/*.mk
+-include $(INFRA_DIR)/projects/*.mk
 include $(INFRA_DIR)/icmk/*/*.mk
 
 # Macroses
