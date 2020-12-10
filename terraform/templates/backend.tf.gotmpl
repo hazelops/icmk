@@ -1,3 +1,49 @@
+{{if (.Env.ENV | strings.Contains "localstack")}}
+terraform {
+  backend "local" {}
+}
+
+provider "aws" {
+  profile                     = var.aws_profile
+  region                      = var.aws_region
+  s3_force_path_style         = true
+  secret_key                  = "mock_secret_key"
+  skip_credentials_validation = true
+  skip_metadata_api_check     = true
+  skip_requesting_account_id  = true
+
+  endpoints {
+    apigateway     = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    acm            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    cloudformation = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    cloudwatch     = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ec2            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    dynamodb       = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    es             = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    firehose       = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    iam            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    kinesis        = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    lambda         = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    route53        = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    redshift       = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    s3             = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    secretsmanager = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ses            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    sns            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    sqs            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ssm            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    stepfunctions  = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    sts            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ecs            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+    ecr            = "{{ .Env.LOCALSTACK_ENDPOINT }}"
+  }
+}
+{{else}}
+provider "aws" {
+  profile = var.aws_profile
+  region  = var.aws_region
+}
+
 terraform {
   backend "s3" {
     bucket         = "{{if .Env.TERRAFORM_STATE_BUCKET_NAME}}{{ .Env.TERRAFORM_STATE_BUCKET_NAME }}{{else}}nutcorpnet-tf-state{{end}}"
@@ -7,3 +53,4 @@ terraform {
     dynamodb_table = "{{if .Env.TERRAFORM_STATE_DYNAMODB_TABLE}}{{ .Env.TERRAFORM_STATE_DYNAMODB_TABLE }}{{else}}tf-state-lock{{end}}"
   }
 }
+{{end}}
