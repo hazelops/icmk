@@ -92,13 +92,14 @@ terraform.get: terraform.init ## Test infrastructure
 	$(TERRAFORM) get --update
 
 # TODO:? Potentionally replace gomplate by terragrunt
-terraform.destroy: terraform confirm ## Destroy infrastructure
+terraform.destroy: ## Destroy infrastructure
 	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) destroy
 
 terraform.destroy-quiet: ## Destroy infrastructure without confirmation
 	@ cd $(ENV_DIR) && \
-	$(TERRAFORM) destroy -auto-approve -force || $(TERRAFORM) destroy -auto-approve -force
+	$(TERRAFORM) destroy -auto-approve -force || $(TERRAFORM) destroy -auto-approve -force && \
+	echo "\n\033[36m[INFO] Please run: make secrets.delete or app.delete_secrets now\033[0m"
 
 terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json encoded in base64.
 	@ cd $(ENV_DIR) && \
