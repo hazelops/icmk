@@ -7,7 +7,9 @@ SERVICE_SECRETS_FILE = $(INFRA_DIR)/env/$(ENV)/secrets/$(SVC).json
 CMD_SERVICE_SECRETS_PUSH = @ (echo $(foreach item, $(SERVICE_SECRETS), \
 		$(shell aws ssm --profile=$(AWS_PROFILE) put-parameter --name="/$(ENV)/$(SVC)/$(item)" --value="$(shell \
 			cat $(SERVICE_SECRETS_FILE) | $(JQ) -r '.$(item)' \
-		)" --type String --overwrite \
+		)" --type SecureString --overwrite && \
+		aws ssm add-tags-to-resource --resource-type "Parameter" --resource-id "/$(ENV)/$(SVC)/$(item)" \
+		--tags "Key=Application,Value=$(SVC)" "Key=EnvVarName,Value=$(item)" \
 	)) > /dev/null ) && echo "\033[32m[OK]\033[0m $(SVC) secrets upload" || echo "\033[31m[ERROR]\033[0m $(SVC) secrets upload"
 
 # Tasks
