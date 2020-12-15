@@ -7,13 +7,13 @@ The idea is to use [GNU Make](https://www.gnu.org/software/make/) as a vehicle f
 
 This way, a coherent set of commands can be used locally or on the CI, as simple as:
 ```shell script
-make deploy # One-stop command that deploys everything from scratch in a right order. Infra, Applications, etc.
+make deploy # One-stop command that deploys everything from scratch in a right order. Secrets, Infra, Applications, etc.
 ```
 Or
 ```shell script
+make secrets # Pushes secrets to SSM
 make infra # Deploys the whole infrastructure (Terraform)
 make api # Builds a Docker image, Pushes it to Docker registry and deploys ECS service
-make secrets # Pushes secrets to SSM
 ```
 Or
 ```shell script
