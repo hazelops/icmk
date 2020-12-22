@@ -1,4 +1,4 @@
-{{if (.Env.ENV | strings.Contains "localstack")}}
+{{if or (.Env.ENV | strings.Contains "localstack") (.Env.ENV | strings.Contains "local") }}
 terraform {
   backend "local" {}
 }
