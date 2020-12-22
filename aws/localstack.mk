@@ -3,7 +3,8 @@
 # This can be overriden for different args, like setting an endpoint, like localstack
 LOCALSTACK_IMAGE ?= localstack/localstack
 LOCALSTACK_VERSION ?= latest
-LOCALSTACK_ENDPOINT ?= http://$(LOCALSTACK_CONTAINER_IP):4566
+LOCALSTACK_HOST ?= $(LOCALSTACK_CONTAINER_IP)
+LOCALSTACK_ENDPOINT ?= http://$(LOCALSTACK_HOST):4566
 LOCALSTACK_WEB_UI_PORT ?= 8088
 LOCALSTACK_PORTS ?= "4510-4620"
 LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,cloudformation,sts,iam,acm,ec2,route53,ssm,cloudwatch,apigateway,ecs,ecr,events,serverless" #etc. serverless? api-gateway?
@@ -32,6 +33,7 @@ AWS_ARGS ?= $$(if [ "$(ENV)" = "localstack" ] && [ $(LOCALSTACK_CONTAINER_IP) ];
 
 # Tasks
 ########################################################################################################################
+localstack: localstack.up
 localstack.up:
 	$(CMD_LOCALSTACK_UP)
 localstack.down:
