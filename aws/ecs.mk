@@ -20,6 +20,9 @@ ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm ge
 ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
 SSM_OUTPUT_JSON = $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d)
 
+# This is required due to a bug in Docker Multistage + Cache configuration.
+ECS_SERVICE_DOCKER_BUILD_CACHE_PARAMETER = $(shell [[ "$(ENABLE_BUILDKIT)" == "1" ]] && echo "--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)" || echo "" )
+
 ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs --profile $(AWS_PROFILE) run-task --cluster $(ECS_CLUSTER_NAME) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" --network-configuration '$(ECS_SERVICE_TASK_NETWORK_CONFIG)' --launch-type "$(ECS_SERVICE_TASK_LAUNCH_TYPE)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV) && sleep 1)
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs --profile $(AWS_PROFILE) describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
 
@@ -30,7 +33,7 @@ CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) buil
 	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) \
 	-t $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST) \
 	-f $(PROJECT_PATH)/$(DOCKERFILE) \
-	--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST) \
+	$(ECS_SERVICE_DOCKER_BUILD_CACHE_PARAMETER) \
 	--build-arg DOCKER_REGISTRY=$(DOCKER_REGISTRY) \
 	--build-arg DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME) \
 	--build-arg ENV=$(ENV) \
