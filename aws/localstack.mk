@@ -1,5 +1,7 @@
 # Macroses
 ########################################################################################################################
+# Actual LOCALSTACK_API_KEY should be set in Makefile
+LOCALSTACK_API_KEY ?= 1234567Local
 # This can be overriden for different args, like setting an endpoint, like localstack
 LOCALSTACK_IMAGE ?= localstack/localstack
 LOCALSTACK_VERSION ?= latest
@@ -13,7 +15,7 @@ CMD_LOCALSTACK_UP ?= @ ( $(DOCKER) run -d --name localstack -p $(LOCALSTACK_WEB_
 	-p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) \
 	-p 53:53 \
 	-p 443:443 \
-	-e LOCALSTACK_API_KEY=27deueEYWn \
+	-e LOCALSTACK_API_KEY=$(LOCALSTACK_API_KEY) \
 	-e DEBUG=1 \
 	-e SERVICES=$(LOCALSTACK_SERVICE_LIST) \
 	-e DATA_DIR=/tmp/localstack/data \
