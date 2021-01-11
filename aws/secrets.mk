@@ -19,10 +19,10 @@ CMD_SERVICE_SECRETS_DELETE = @ (echo $(foreach item, $(shell aws ssm --profile=$
 		echo "\033[32m[OK]\033[0m /$(ENV)/$(SVC)/* secrets deleted" || echo "\033[31m[ERROR]\033[0m /$(ENV)/$(SVC)/* secrets deletion"
 
 CMD_SERVICE_ALL_SECRET_KEYS = $(foreach item, $(shell aws ssm --profile=$(AWS_PROFILE) get-parameters-by-path \
-		--path "/$(ENV)/$(SVC)" --recursive | $(JQ) -e -r '.Parameters[] | .Name' ), $(item))
+		--path "/$(ENV)/$(SVC)" --recursive | $(JQ) -e -r '.Parameters[] | select(.Type == "SecureString") | .Name' ), $(item))
 CMD_SERVICE_SECRETS_PULL = @ (echo $(shell echo "{\"INFO\":\"EMPTY_JSON_CREATED\"}" > $(SERVICE_SECRETS_BACKUP_FILE)) && \
 		$(foreach item, $(CMD_SERVICE_ALL_SECRET_KEYS), \
-		$(shell $(JQ) --arg value "$(shell echo $(item) | sed 's|.*/||')" '.[$$value] = "'$(shell aws ssm --profile=$(AWS_PROFILE) get-parameter --name $(item) --query Parameter.Value)'"' \
+		$(shell $(JQ) --arg value "$(shell echo $(item) | sed 's|.*/||')" '.[$$value] = "'$(shell aws ssm --profile=$(AWS_PROFILE) get-parameter --with-decryption --name $(item) --query Parameter.Value)'"' \
 		$(SERVICE_SECRETS_BACKUP_FILE) > tmp.json && mv tmp.json $(SERVICE_SECRETS_BACKUP_FILE))) > /dev/null ) && \
 		$(JQ) 'del(."INFO")' $(SERVICE_SECRETS_BACKUP_FILE) > tmp.json && mv tmp.json $(SERVICE_SECRETS_BACKUP_FILE) && \
 		echo "\033[32m[OK]\033[0m /$(ENV)/$(SVC)/* secrets pulled" || echo "\033[31m[ERROR]\033[0m /$(ENV)/$(SVC)/* secrets getting"
