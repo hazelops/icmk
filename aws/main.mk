@@ -6,8 +6,9 @@ endif
 
 # Macroses
 ########################################################################################################################
-# We don't check for AWS_PROFILE, but instead we assume the profile name
-AWS_PROFILE ?= $(NAMESPACE)-$(ENV_BASE)
+# We don't check for AWS_PROFILE, but instead we assume the profile name.
+# You can override it, although it's recommended to have a profile per environment in your ~/.aws/credentials
+AWS_PROFILE ?= $(NAMESPACE)-$(ENV)
 AWS_USER ?= $(shell aws --profile=$(AWS_PROFILE) iam get-user | $(JQ) -r ".User.UserName")
 AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
 AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
@@ -75,7 +76,7 @@ ifeq (, $(shell which session-manager-plugin))
 else
 	@echo "\n\033[32m[OK]\033[0m SSM Session Manager Plugin is installed."
 endif
-	
+
 # Dependencies
 ########################################################################################################################
 # TODO: Add validation for ability to connect to AWS
