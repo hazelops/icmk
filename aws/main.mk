@@ -6,11 +6,13 @@ endif
 
 # Macroses
 ########################################################################################################################
-# We don't check for AWS_PROFILE, but instead we assume the profile name
-AWS_PROFILE ?= $(NAMESPACE)-$(ENV_BASE)
+# We don't check for AWS_PROFILE, but instead we assume the profile name.
+# You can override it, although it's recommended to have a profile per environment in your ~/.aws/credentials
+AWS_PROFILE ?= $(NAMESPACE)-$(ENV)
 AWS_USER ?= $(shell aws --profile=$(AWS_PROFILE) iam get-user | $(JQ) -r ".User.UserName")
 AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
-AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value'))
+
+AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value') || echo "$(ENV) (User env is not configured)")
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
 AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
@@ -44,7 +46,7 @@ CMD_SSM_CLEANUP ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(S
 ########################################################################################################################
 aws.debug: ## Show environment information for debug purposes
 	@echo "\033[32m=== AWS Environment Info ===\033[0m"
-	@echo "\033[36mAWS_DEV_ENV_NAME\033[0m: $(AWS_DEV_ENV_NAME) (set devEnvironmentName here https://console.aws.amazon.com/iam/home?region=us-east-1#/users/$(AWS_USER)?section=tags)"
+	@echo "\033[36mAWS_DEV_ENV_NAME\033[0m: $(AWS_DEV_ENV_NAME)"
 	@echo "\033[36mAWS_ACCOUNT\033[0m: $(AWS_ACCOUNT)"
 	@echo "\033[36mAWS_PROFILE\033[0m: $(AWS_PROFILE)"
 	@echo "\033[36mAWS_USER\033[0m: $(AWS_USER)"
@@ -75,7 +77,7 @@ ifeq (, $(shell which session-manager-plugin))
 else
 	@echo "\n\033[32m[OK]\033[0m SSM Session Manager Plugin is installed."
 endif
-	
+
 # Dependencies
 ########################################################################################################################
 # TODO: Add validation for ability to connect to AWS

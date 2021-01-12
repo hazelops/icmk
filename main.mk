@@ -31,7 +31,7 @@ SERVICE_NAME ?= $(ENV)-$(SVC)
 .PHONY: auth help
 all: help
 
-env.debug: icmk.debug aws.debug os.debug
+env.debug: icmk.debug os.debug aws.debug
 icmk.debug:
 	@echo "\033[32m=== ICMK Info ===\033[0m"
 	@echo "\033[36mENV\033[0m: $(ENV)"
@@ -39,6 +39,7 @@ icmk.debug:
 	@echo "\033[36mINFRA_DIR\033[0m: $(INFRA_DIR)"
 	@echo "\033[36mPWD\033[0m: $(PWD)"
 	@echo "\033[36mICMK_VERSION\033[0m: $(ICMK_VERSION)"
+	@echo "\033[36mICMK_GIT_REVISION\033[0m: $(ICMK_GIT_REVISION)"
 
 up: docker
 	# TODO: This should probably use individual apps "up" definitions
