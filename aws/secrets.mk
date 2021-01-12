@@ -5,16 +5,16 @@ SERVICE_SECRETS = $(shell cat $(SERVICE_SECRETS_FILE) | $(JQ) -e -r '. | to_entr
 
 # TODO: Figure out whether to use shell's foreach or Make can build the list dynamically
 CMD_SERVICE_SECRETS_PUSH = @ (echo $(foreach item, $(SERVICE_SECRETS), \
-		$(shell aws ssm --profile=$(AWS_PROFILE) put-parameter --name="/$(ENV)/$(SVC)/$(item)" --value="$(shell \
+		$(shell $(AWS) --profile=$(AWS_PROFILE) ssm put-parameter --name="/$(ENV)/$(SVC)/$(item)" --value="$(shell \
 			cat $(SERVICE_SECRETS_FILE) | $(JQ) -r '.$(item)' \
 		)" --type SecureString --overwrite && \
-		aws ssm add-tags-to-resource --resource-type "Parameter" --resource-id "/$(ENV)/$(SVC)/$(item)" \
+		$(AWS) --profile=$(AWS_PROFILE) ssm add-tags-to-resource --resource-type "Parameter" --resource-id "/$(ENV)/$(SVC)/$(item)" \
 		--tags "Key=Application,Value=$(SVC)" "Key=EnvVarName,Value=$(item)" \
 	)) > /dev/null ) && echo "\033[32m[OK]\033[0m $(SVC) secrets upload" || echo "\033[31m[ERROR]\033[0m $(SVC) secrets upload"
 
-CMD_SERVICE_SECRETS_DELETE = @ (echo $(foreach item, $(shell aws ssm --profile=$(AWS_PROFILE) get-parameters-by-path \
+CMD_SERVICE_SECRETS_DELETE = @ (echo $(foreach item, $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameters-by-path \
 		--path "/$(ENV)/$(SVC)" --query "Parameters[*].Name" --recursive | $(JQ) -e -r '. | to_entries[] | .value' ), \
-		$(shell aws ssm --profile=$(AWS_PROFILE) delete-parameter --name $(item))) > /dev/null ) && \
+		$(shell $(AWS) --profile=$(AWS_PROFILE) ssm delete-parameter --name $(item))) > /dev/null ) && \
 		echo "\033[32m[OK]\033[0m /$(ENV)/$(SVC)/* secrets deleted" || echo "\033[31m[ERROR]\033[0m /$(ENV)/$(SVC)/* secrets deletion"
 
 # Tasks
