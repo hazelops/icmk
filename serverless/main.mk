@@ -19,6 +19,7 @@ CMD_SLS_SERVICE_INVOKE = $(SLS) invoke --function $(SVC) --path $(EVENT_FILE) --
 CMD_SLS_SERVICE_DESTROY = $(SLS) remove --config $(SLS_FILE) --service $(SVC) --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
 CMD_SLS_SERVICE_BUILD = cd $(ROOT_DIR)/$(PROJECT_PATH) && make
 CMD_SLS_SERVICE_SECRETS_PUSH = $(CMD_SERVICE_SECRETS_PUSH)
+CMD_SLS_SERVICE_SECRETS_PULL = $(CMD_SERVICE_SECRETS_PULL)
 # This works with "serverless-domain-manager" plugin and provide domain creation and remove
 CMD_SLS_SERVICE_CREATE_DOMAIN = $(SLS) create_domain --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
 CMD_SLS_SERVICE_DELETE_DOMAIN = $(SLS) delete_domain --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
