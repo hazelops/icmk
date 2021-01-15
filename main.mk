@@ -27,10 +27,10 @@ ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 ifneq (,$(TIER))
     ifneq (,$(STACK))
         ENV_DIR:=$(ENV_DIR)/$(STACK)/$(TIER)
-        TERRAFORM_STATE_KEY=$(ENV)/$(STACK)/$(TIER)
+        TERRAFORM_STATE_KEY=$(ENV)/$(STACK)/$(TIER)/terraform.tfstate
     else
         ENV_DIR:=$(ENV_DIR)/$(TIER)
-        TERRAFORM_STATE_KEY=$(ENV)/$(TIER)
+        TERRAFORM_STATE_KEY=$(ENV)/$(TIER)/terraform.tfstate
     endif
 endif
 PROJECT_PATH ?= projects/$(SVC)
