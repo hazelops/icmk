@@ -49,6 +49,8 @@ icmk.debug:
 	@echo "\033[36mPWD\033[0m: $(PWD)"
 	@echo "\033[36mICMK_VERSION\033[0m: $(ICMK_VERSION)"
 	@echo "\033[36mICMK_GIT_REVISION\033[0m: $(ICMK_GIT_REVISION)"
+	@echo "\033[36mENV_DIR\033[0m: $(ENV_DIR)"
+
 
 up: docker
 	# TODO: This should probably use individual apps "up" definitions
