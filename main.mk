@@ -1,5 +1,6 @@
 # Environment Validation
 ########################################################################################################################
+# Ensure ENV is set
 ifndef ENV
 $(error Please set ENV via `export ENV=<env_name>` or use direnv)
 endif
@@ -37,6 +38,7 @@ icmk.debug:
 	@echo "\033[36mENV\033[0m: $(ENV)"
 	@echo "\033[36mTAG\033[0m: $(TAG)"
 	@echo "\033[36mINFRA_DIR\033[0m: $(INFRA_DIR)"
+	@echo "\033[36mENV_DIR\033[0m: $(ENV_DIR)"
 	@echo "\033[36mPWD\033[0m: $(PWD)"
 	@echo "\033[36mICMK_VERSION\033[0m: $(ICMK_VERSION)"
 	@echo "\033[36mICMK_GIT_REVISION\033[0m: $(ICMK_GIT_REVISION)"
@@ -56,7 +58,6 @@ use: env.use
 plan: terraform.plan
 
 ## Tool Dependencies
-DOCKER  ?= $(shell which docker)
 COMPOSE ?= $(shell which docker-compose)
 BUSYBOX_VERSION ?= 1.31.1
 
