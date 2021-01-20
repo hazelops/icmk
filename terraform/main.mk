@@ -9,7 +9,7 @@ TERRAFORM_VERSION ?= "0.12.29"
 
 AWS_LIMITS_LIST ?= $$(echo "{ \
 \"aws_s3_bucket\":[ \
-	{\"value\":\"1\", \"service\":\"s3\", \"quotacode\":\"L-DC2B2D3D\"}], \
+	{\"value\":\"100\", \"service\":\"s3\", \"quotacode\":\"L-DC2B2D3D\"}], \
 \"aws_route53_health_check\":[ \
 	{\"value\":\"200\", \"service\":\"route53\", \"quotacode\":\"L-ACB674F3\"}], \
 \"aws_dynamodb_table\":[ \
