@@ -37,7 +37,7 @@ ifneq (,$(TIER))
 		-include $(INFRA_DIR)/env/$(ENV)/$(TIER)/*.mk
 	endif
 endif
-PROJECT_PATH ?= projects/$(SVC)
+PROJECT_PATH ?= $(shell cd projects/$(SVC) && pwd -P)
 SERVICE_NAME ?= $(ENV)-$(SVC)
 # Tasks
 ########################################################################################################################
