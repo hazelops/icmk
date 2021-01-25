@@ -1,5 +1,15 @@
 # Macroses
 ########################################################################################################################
+# SSM Wrapper
+SSM ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -v $(ENV_DIR):/$(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e AWS_REGION=$(AWS_REGION) my-ssm-wrapper:latest ssm
+SERVICE_PARAMETERS_FILE = $(INFRA_DIR)/env/$(ENV)/secrets/$(SVC).json
+SERVICE_PARAMETERS = $(shell cat $(SERVICE_PARAMETERS_FILE) | $(JQ) -e -r '.[].key' )
+CMD_SERVICE_PARAMETERS_PUSH = @$(SSM) add -f $(SERVICE_PARAMETERS_FILE) -p $(ENV)/$(SVC) -k alias/aws/ssm -o $$true
+CMD_SERVICE_PARAMETERS_LIST = @$(SSM) list -p $(ENV)/$(SVC)
+# Deletion temporary does not work
+CMD_SERVICE_PARAMETERS_DELETE = @ (echo $(foreach item, $(SERVICE_PARAMETERS), \
+		$(shell $(SSM) delete -p $(ENV)/$(SVC) -n $(item) )) )
+########################################################################################################################
 SERVICE_SECRETS_BACKUP_FILE ?= $(INFRA_DIR)/env/$(ENV)/secrets/$(SVC)-backup.json
 SERVICE_SECRETS_FILE = $(INFRA_DIR)/env/$(ENV)/secrets/$(SVC).json
 SERVICE_SECRETS = $(shell cat $(SERVICE_SECRETS_FILE) | $(JQ) -e -r '. | to_entries[] | .key' )
