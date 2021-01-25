@@ -17,9 +17,8 @@ CMD_SERVICE_SECRETS_PUSH = @ (echo $(foreach item, $(SERVICE_SECRETS), \
 		echo "\033[31m[ERROR]\033[0m /$(ENV)/$(SVC)/* secrets upload")) > /dev/null ) && echo "\033[32m[OK]\033[0m $(SVC) secrets upload" || echo "\033[31m[ERROR]\033[0m $(SVC) secrets upload"
 
 CMD_GLOBAL_SECRETS_PUSH = @ (echo $(foreach item, $(GLOBAL_SECRETS), \
-		$(shell $(AWS) --profile=$(AWS_PROFILE) ssm put-parameter --name="/$(ENV)/global/$(item)" --value="$(shell \
-			cat $(GLOBAL_SECRETS_FILE) | $(JQ) -r '.$(item)' \
-		)" --type SecureString --overwrite || \
+		$(shell $(AWS) --profile=$(AWS_PROFILE) ssm put-parameter --name="/$(ENV)/global/$(item)" \
+		--value="$(shell cat $(GLOBAL_SECRETS_FILE) | $(JQ) -r '.$(item)' )" --type SecureString --overwrite || \
 		echo "\033[31m[ERROR]\033[0m /$(ENV)/global/* secrets upload")) > /dev/null ) && echo "\033[32m[OK]\033[0m Global secrets upload" || echo "\033[31m[ERROR]\033[0m Global secrets upload"
 
 CMD_SERVICE_SECRETS_DELETE = @ (echo $(foreach item, $(shell $(AWS) --profile=$(AWS_PROFILE) ssm get-parameters-by-path \
