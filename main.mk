@@ -24,6 +24,19 @@ ICMK_TEMPLATE_TERRAFORM_TFPLAN = $(INFRA_DIR)/icmk/terraform/templates/terraform
 # We are using a tag from AWS User which would tell us which environment this user is using. You can always override it.
 ENV ?= $(AWS_DEV_ENV_NAME)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
+
+# Support for stack/tier workspace paths
+ifneq (,$(TIER))
+	ifneq (,$(STACK))
+		ENV_DIR:=$(ENV_DIR)/$(STACK)/$(TIER)
+		TERRAFORM_STATE_KEY=$(ENV)/$(STACK)/$(TIER)/terraform.tfstate
+		-include $(INFRA_DIR)/env/$(ENV)/$(STACK)/$(TIER)/*.mk
+	else
+		ENV_DIR:=$(ENV_DIR)/$(TIER)
+		TERRAFORM_STATE_KEY=$(ENV)/$(TIER)/terraform.tfstate
+		-include $(INFRA_DIR)/env/$(ENV)/$(TIER)/*.mk
+	endif
+endif
 PROJECT_PATH ?= projects/$(SVC)
 SERVICE_NAME ?= $(ENV)-$(SVC)
 # Tasks
@@ -40,6 +53,8 @@ icmk.debug:
 	@echo "\033[36mPWD\033[0m: $(PWD)"
 	@echo "\033[36mICMK_VERSION\033[0m: $(ICMK_VERSION)"
 	@echo "\033[36mICMK_GIT_REVISION\033[0m: $(ICMK_GIT_REVISION)"
+	@echo "\033[36mENV_DIR\033[0m: $(ENV_DIR)"
+
 
 up: docker
 	# TODO: This should probably use individual apps "up" definitions
