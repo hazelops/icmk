@@ -4,15 +4,16 @@ SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
 SSH_PUBLIC_KEY_BASE64 = $(shell echo "$(SSH_PUBLIC_KEY)" | $(BASE64))
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
-OUTPUT_JSON_FILE = $(INFRA_DIR)/env/$(ENV)/output.json
+OUTPUT_JSON_FILE = $(ENV_DIR)/output.json
 TERRAFORM_VERSION ?= "0.12.29"
+
 
 # AWS_LIMITS_LIST contains name of aws resources like we see in terraform plan output (example: aws_s3_bucket)
 # AWS resources have the following properties: limit value, name of aws service and quota code for raising a request.
 # If you need to check one more service limit - please just add a new service info to this json list 
 AWS_LIMITS_LIST ?= $$(echo "{ \
 \"aws_s3_bucket\":[ \
-	{\"value\":\"1\", \"service\":\"s3\", \"quotacode\":\"L-DC2B2D3D\"}], \
+	{\"value\":\"100\", \"service\":\"s3\", \"quotacode\":\"L-DC2B2D3D\"}], \
 \"aws_route53_health_check\":[ \
 	{\"value\":\"200\", \"service\":\"route53\", \"quotacode\":\"L-ACB674F3\"}], \
 \"aws_dynamodb_table\":[ \
@@ -37,7 +38,6 @@ CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
 TFLOCK ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hazelops/tflock
 TERRAFORM ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hashicorp/terraform:$(TERRAFORM_VERSION)
-
 
 CMD_SAVE_OUTPUT_TO_SSM = $(AWS) --profile "$(AWS_PROFILE)" ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --tier "Intelligent-Tiering" --data-type "text" --overwrite --value "$$(cat $(OUTPUT_JSON_FILE) | $(BASE64))" > /dev/null && echo "\033[32m[OK]\033[0m Terraform output saved to ssm://$(ENV)/terraform-output" || (echo "\033[31m[ERROR]\033[0m Terraform output saving failed" && exit 1)
 # Optional cmd to be used, because the branch related to TF v0.13 upgrade already have updated versions.tf files

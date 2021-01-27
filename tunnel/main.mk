@@ -12,7 +12,7 @@ CMD_BASTION_SSH_TUNNEL_SSH_KEY_ENSURE_PRESENT = ($(AWS) --profile $(AWS_PROFILE)
 
 # Tasks
 ########################################################################################################################
-tunnel: tunnel.up tunnel.config
+tunnel: tunnel.config tunnel.up
 tunnel.up:
 	@$(CMD_BASTION_SSH_TUNNEL_UP)
 
