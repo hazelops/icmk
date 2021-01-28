@@ -20,7 +20,7 @@ AWS ?= $(DOCKER) run \
 	-i \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \
 	-e AWS_REGION="$(AWS_REGION)" \
-	amazon/aws-cli:2.0.40 $(AWS_ARGS)
+	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
 
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail $(SERVICE_NAME) --follow
 CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
