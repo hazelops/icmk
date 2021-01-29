@@ -9,15 +9,21 @@ endif
 # We don't check for AWS_PROFILE, but instead we assume the profile name.
 # You can override it, although it's recommended to have a profile per environment in your ~/.aws/credentials
 AWS_PROFILE ?= $(NAMESPACE)-$(ENV)
-AWS_USER ?= $(shell aws --profile=$(AWS_PROFILE) iam get-user | $(JQ) -r ".User.UserName")
-AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) --profile=$(AWS_PROFILE) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
+AWS_USER ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) iam get-user | $(JQ) -r ".User.UserName")
+AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
 
-AWS_DEV_ENV_NAME ?= $(shell aws --profile=$(AWS_PROFILE) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value') || echo "$(ENV) (User env is not configured)")
+AWS_DEV_ENV_NAME ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value') || echo "$(ENV) (User env is not configured)")
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
-AWS ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -i amazon/aws-cli:2.0.40 $(AWS_ARGS)
-CMD_AWS_LOGS_TAIL = @$(AWS) logs tail --profile $(AWS_PROFILE) $(SERVICE_NAME) --follow
-CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --profile $(AWS_PROFILE) --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
+AWS ?= $(DOCKER) run \
+	-v $(HOME)/.aws/:/root/.aws \
+	-i \
+	-e AWS_PROFILE="$(AWS_PROFILE)" \
+	-e AWS_REGION="$(AWS_REGION)" \
+	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
+
+CMD_AWS_LOGS_TAIL = @$(AWS) logs tail $(SERVICE_NAME) --follow
+CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
 
 # Getting OS|Linux info
 OS_NAME ?= $(shell uname -s)

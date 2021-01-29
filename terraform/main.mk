@@ -8,6 +8,27 @@ OUTPUT_JSON_FILE = $(ENV_DIR)/output.json
 TERRAFORM_VERSION ?= "0.12.29"
 
 
+# AWS_LIMITS_LIST contains name of aws resources like we see in terraform plan output (example: aws_s3_bucket)
+# AWS resources have the following properties: limit value, name of aws service and quota code for raising a request.
+# If you need to check one more service limit - please just add a new service info to this json list 
+AWS_LIMITS_LIST ?= $$(echo "{ \
+\"aws_s3_bucket\":[ \
+	{\"value\":\"100\", \"service\":\"s3\", \"quotacode\":\"L-DC2B2D3D\"}], \
+\"aws_route53_health_check\":[ \
+	{\"value\":\"200\", \"service\":\"route53\", \"quotacode\":\"L-ACB674F3\"}], \
+\"aws_dynamodb_table\":[ \
+	{\"value\":\"256\", \"service\":\"dynamodb\", \"quotacode\":\"L-F98FE922\"}], \
+\"aws_eip\":[ \
+	{\"value\":\"5\", \"service\":\"vpc\", \"quotacode\":\"L-2AFB9258\"}] \
+}")
+
+AWS_LIMITS ?= @ ( echo $(foreach item, $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -e -r '. | to_entries[] | .key' ), \
+"$$(if [ $(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/tfplan.txt) -lt $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].value') ]; \
+then echo "\n\033[32m[OK]\033[0m $(item) limit"; \
+else echo "\n\033[33m[WARNING]\033[0m $(item) limit (Value:$(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].value')) exceeded! \
+Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/tfplan.txt) \
+\033[33m To request a service quota increase:\033[0m \033[36m aws service-quotas request-service-quota-increase --service-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].service') --quota-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].quotacode') --desired-value <your_desired_value> \033[0m"; fi )") )
+
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
 TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
@@ -18,7 +39,8 @@ TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
 TFLOCK ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hazelops/tflock
 TERRAFORM ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hashicorp/terraform:$(TERRAFORM_VERSION)
 
-CMD_SAVE_OUTPUT_TO_SSM = $(AWS) --profile "$(AWS_PROFILE)" ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --tier "Intelligent-Tiering" --data-type "text" --overwrite --value "$$(cat $(OUTPUT_JSON_FILE) | $(BASE64))" > /dev/null && echo "\033[32m[OK]\033[0m Terraform output saved to ssm://$(ENV)/terraform-output" || (echo "\033[31m[ERROR]\033[0m Terraform output saving failed" && exit 1)
+CMD_SAVE_OUTPUT_TO_SSM = $(AWS) ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --tier "Intelligent-Tiering" --data-type "text" --overwrite --value "$$(cat $(OUTPUT_JSON_FILE) | $(BASE64))" > /dev/null && echo "\033[32m[OK]\033[0m Terraform output saved to ssm://$(ENV)/terraform-output" || (echo "\033[31m[ERROR]\033[0m Terraform output saving failed" && exit 1)
+
 # Optional cmd to be used, because the branch related to TF v0.13 upgrade already have updated versions.tf files
 CMD_TERRAFORM_MODULES_UPGRADE = $(shell find $(INFRA_DIR)/terraform -name '*.tf' | xargs -n1 dirname | uniq | xargs -n1 $(TERRAFORM) 0.13upgrade -yes)
 # Tasks
@@ -109,7 +131,8 @@ terraform.plan: terraform.init ## Terraform plan output for Github Action
 	$(TERRAFORM) show tfplan -input=false -no-color > $(ENV_DIR)/tfplan.txt && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/tfplan.md
 
-
+terraform.limits: terraform.plan
+	@ $(AWS_LIMITS)
 
 env.use: terraform jq
 	@ [ -e $(ENV_DIR) ] && \
