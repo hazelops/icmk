@@ -71,6 +71,11 @@ env: env.use
 use: env.use
 plan: terraform.plan
 
+# Verification of README existing
+README_FILE ?= projects/$(SVC)/README.md
+README_FILE_1SYMBOL ?= $$(cat $(README_FILE) | head -n 1 | head -c 1)
+README ?= @$$([ -f $(README_FILE) ]) && $$([ "$(README_FILE_1SYMBOL)" = "$(HASHSIGN)" ]) && echo "\033[32m[OK]\033[0m README exists" || echo "\033[31m[FAILED]\033[0m README does not exist. Please describe your project in README.md."
+
 ## Tool Dependencies
 DOCKER  ?= $(shell which docker)
 COMPOSE ?= $(shell which docker-compose)
