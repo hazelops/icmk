@@ -12,7 +12,7 @@ include $(INFRA_DIR)/icmk/*/*.mk
 # Macroses
 ########################################################################################################################
 # Makefile Helpers
-SVC = $(shell echo $(@) | $(CUT) -d. -f1 )
+SVC = $(shell echo $(@) | grep $(SLASH) > /dev/null && echo $$(echo $(@) | $(CUT) -d/ -f2 | $(CUT) -d. -f1) || echo $$(echo $(@) | $(CUT) -d. -f1))
 SVC_TYPE = $(shell echo $(SVC) | $(CUT) -d- -f1 )
 ENV_BASE = dev
 NPM_TOKEN ?= nil
@@ -37,8 +37,10 @@ ifneq (,$(TIER))
 		-include $(INFRA_DIR)/env/$(ENV)/$(TIER)/*.mk
 	endif
 endif
-PROJECT_PATH_ABS=$(shell cd projects/$(SVC) && pwd -P)
-PROJECT_PATH = projects/$(shell basename $(PROJECT_PATH_ABS))
+PROJECT_SUB_DIR =  $(shell echo $(@) | grep $(SLASH) > /dev/null && echo $$(echo $(@) | $(CUT) -d/ -f1)$(SLASH) || echo "")
+PROJECT_ROOT = projects/$(PROJECT_SUB_DIR)
+PROJECT_PATH_ABS=$(shell cd $(PROJECT_ROOT)$(SVC) && pwd -P)
+PROJECT_PATH = $(PROJECT_ROOT)$(shell basename $(PROJECT_PATH_ABS))
 SERVICE_NAME ?= $(ENV)-$(SVC)
 # Tasks
 ########################################################################################################################
@@ -72,7 +74,7 @@ use: env.use
 plan: terraform.plan
 
 # Verification of README existing
-README_FILE ?= projects/$(SVC)/README.md
+README_FILE ?= $(PROJECT_ROOT)$(SVC)/README.md
 README_FILE_1SYMBOL ?= $$(cat $(README_FILE) | head -n 1 | head -c 1)
 README ?= @$$([ -f $(README_FILE) ]) && $$([ "$(README_FILE_1SYMBOL)" = "$(HASHSIGN)" ]) && echo "\033[32m[OK]\033[0m README exists" || echo "\033[31m[FAILED]\033[0m README does not exist. Please describe your project in README.md."
 
@@ -143,3 +145,4 @@ endif
 
 # This is a workaround for syntax highlighters that break on a "Comment" symbol.
 HASHSIGN = \#
+SLASH = /
