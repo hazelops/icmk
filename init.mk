@@ -40,18 +40,23 @@ examples.simple: confirm $(INFRA_DIR)/icmk
 confirm:
 	@echo "\033[31mAre you sure? [y/N]\033[0m" && read ans && [ $${ans:-N} = y ] || (echo "\033[32mCancelled.\033[0m" && exit 1)
 
-# TOOLS
-GIT  ?= $(shell which git)
-
 # Dependencies
 ########################################################################################################################
-# Ensures docker is installed - does not enforce version, please use latest
+# Core Dependencies
+GIT  ?= $(shell which git)
+DOCKER  ?= $(shell which docker)
+
+# Ensures git is installed - does not enforce version, please use latest
 git:
 ifeq (, $(GIT))
 	$(error "Docker is not installed or incorrectly configured. https://www.docker.com/")
 #else
 #	@$(DOCKER) --version
 endif
+
+EXECUTABLES = $(GIT) $(DOCKER) aws
+K := $(foreach exec,$(EXECUTABLES),\
+        $(if $(shell which $(exec)),some string,$(error "No $(exec) found in PATH. Please install it.")))
 
 # This ensures we include main.mk only if it's there. If not we don't error out (IE in case of bootstrap)
 -include $(INFRA_DIR)/icmk/main.mk

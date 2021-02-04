@@ -1,5 +1,6 @@
 # Environment Validation
 ########################################################################################################################
+# Ensure ENV is set
 ifndef ENV
 $(error Please set ENV via `export ENV=<env_name>` or use direnv)
 endif
@@ -77,7 +78,6 @@ README_FILE_1SYMBOL ?= $$(cat $(README_FILE) | head -n 1 | head -c 1)
 README ?= @$$([ -f $(README_FILE) ]) && $$([ "$(README_FILE_1SYMBOL)" = "$(HASHSIGN)" ]) && echo "\033[32m[OK]\033[0m README exists" || echo "\033[31m[FAILED]\033[0m README does not exist. Please describe your project in README.md."
 
 ## Tool Dependencies
-DOCKER  ?= $(shell which docker)
 COMPOSE ?= $(shell which docker-compose)
 BUSYBOX_VERSION ?= 1.31.1
 
