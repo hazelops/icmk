@@ -148,4 +148,4 @@ endif
 
 # This is a workaround for syntax highlighters that break on a "Comment" symbol.
 HASHSIGN = \#
-SLASHSIGNSIGN = /
+SLASHSIGN = /
