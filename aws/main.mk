@@ -15,7 +15,7 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) sts get-caller-identi
 AWS_DEV_ENV_NAME ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value') || echo "$(ENV) (User env is not configured)")
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
-AWS ?= $(DOCKER) run \
+AWS ?= $(DOCKER) run --user nobody \
 	-v $(HOME)/.aws/:/root/.aws \
 	-i \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \

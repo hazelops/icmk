@@ -2,7 +2,7 @@
 ########################################################################################################################
 # SSM Wrapper
 SSM_WRAPPER_DOCKER_IMAGE ?= hazelops/ssm-wrapper:latest
-SSM ?= $(DOCKER) run -v $(HOME)/.aws/:/root/.aws -v $(ENV_DIR):/$(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e AWS_REGION=$(AWS_REGION) $(SSM_WRAPPER_DOCKER_IMAGE) ssm
+SSM ?= $(DOCKER) run --user nobody -v $(HOME)/.aws/:/root/.aws -v $(ENV_DIR):/$(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e AWS_REGION=$(AWS_REGION) $(SSM_WRAPPER_DOCKER_IMAGE) ssm
 SERVICE_SECRETS_BACKUP_FILE ?= $(INFRA_DIR)/env/$(ENV)/secrets/$(SVC)-backup.json
 SERVICE_SECRETS_FILE = $(INFRA_DIR)/env/$(ENV)/secrets/$(SVC).json
 SERVICE_SECRETS = $(shell cat $(SERVICE_SECRETS_FILE) | $(JQ) -e -r '.[].key' )
