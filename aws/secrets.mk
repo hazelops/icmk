@@ -55,7 +55,16 @@ CMD_GLOBAL_SECRETS_PULL = @ (echo $(shell echo "{\"INFO\":\"EMPTY_JSON_CREATED\"
 ########################################################################################################################
 secrets.push:
 	@$(CMD_SERVICE_SECRETS_PUSH)
+	@$(CMD_SERVICE_SECRETS_TAGS)
+secrets.pull:
+	@$(CMD_SERVICE_SECRETS_PULL)
 secrets.delete:
 	@$(CMD_SERVICE_SECRETS_DELETE)
+global-secrets.push:
+	@$(CMD_GLOBAL_SECRETS_PUSH)
+global-secrets.pull:
+	@$(CMD_GLOBAL_SECRETS_PULL)
+global-secrets.delete:
+	@$(CMD_GLOBAL_SECRETS_DELETE)
 # Dependencies
 ########################################################################################################################
