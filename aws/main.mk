@@ -48,6 +48,11 @@ SSM_CLEANUP_ON_MAC_OS ?= rm -rf sessionmanager-bundle sessionmanager-bundle.zip
 SSM_CLEANUP_ON_LINUX_OS ?= rm -rf session-manager-plugin$(LINUX_PACKAGE_EXT)
 CMD_SSM_CLEANUP ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(SSM_CLEANUP_ON_LINUX_OS)"; else echo "$(SSM_CLEANUP_ON_MAC_OS)"; fi))
 
+# SSM access to Fargate ECS
+SSM_MI_TARGET ?= $(shell $(AWS) ssm describe-instance-information | $(JQ) -er '.InstanceInformationList[] | select(.Name == "$(SVC)") | .InstanceId' > tmp && cat tmp | head -1 && rm -rf tmp )
+# We use local aws-cli here due to interactive actions 
+CMD_SSM_TO_FARGATE ?= aws --profile $(AWS_PROFILE) ssm start-session --target $(SSM_MI_TARGET)
+
 # Tasks
 ########################################################################################################################
 aws.debug: ## Show environment information for debug purposes
