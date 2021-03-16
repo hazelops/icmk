@@ -84,7 +84,7 @@ ssm-plugin.install:
 	@$(CMD_SSM_CLEANUP)
 ssm-plugin.check:
 ifeq (, $(shell which session-manager-plugin))
-	@echo "\033[31m[FAILED]\033[0m SSM Session Manager Plugin is not installed or incorrectly configured.\nPlease go to https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html and install manually"
+	@echo "\033[31m[FAILED]\033[0m Your SSM Session Manager Plugin is not installed or incorrectly configured.\n Use \033[33mmake ssm-plugin\033[0m to install it.\n Alternatively you can follow AWS Documentation \033[34mhttps://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html\033[0m \n and install it manually."
 else
 	@echo "\n\033[32m[OK]\033[0m SSM Session Manager Plugin is installed."
 endif
