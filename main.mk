@@ -86,14 +86,14 @@ README ?= @$$([ -f $(README_FILE) ]) && $$([ "$(README_FILE_1SYMBOL)" = "$(HASHS
 COMPOSE ?= $(shell which docker-compose)
 BUSYBOX_VERSION ?= 1.31.1
 
-JQ ?= $(DOCKER) run -v $(INFRA_DIR):$(INFRA_DIR) -i --rm colstrom/jq
-CUT ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) cut
-REV ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) rev
-BASE64 ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) base64
-AWK ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) awk
+JQ ?= $(DOCKER) run --user nobody -v $(INFRA_DIR):$(INFRA_DIR) -i --rm colstrom/jq
+CUT ?= $(DOCKER) run --user nobody -i --rm busybox:$(BUSYBOX_VERSION) cut
+REV ?= $(DOCKER) run --user nobody -i --rm busybox:$(BUSYBOX_VERSION) rev
+BASE64 ?= $(DOCKER) run --user nobody -i --rm busybox:$(BUSYBOX_VERSION) base64
+AWK ?= $(DOCKER) run --user nobody -i --rm busybox:$(BUSYBOX_VERSION) awk
 
 
-GOMPLATE ?= $(DOCKER) run \
+GOMPLATE ?= $(DOCKER) run --user nobody \
 	-e ENV="$(ENV)" \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \
 	-e AWS_REGION="$(AWS_REGION)" \
