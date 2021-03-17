@@ -8,8 +8,8 @@ NODE_VERSION ?= 12-alpine3.10
 
 # Docker executors
 ########################################################################################################################
-SLS ?= $(DOCKER) run --user nobody --rm --workdir=/opt/app -e AWS_PROFILE=$(AWS_PROFILE) -e LOCALSTACK_HOST=$(LOCALSTACK_HOST) -v $(ROOT_DIR)/$(PROJECT_PATH):/opt/app -v ~/.aws/:/.aws:ro $(SLS_DOCKER_IMAGE):$(SLS_VERSION) serverless
-NPM ?= $(DOCKER) run --user nobody --rm --workdir=$(ROOT_DIR)/$(PROJECT_PATH) -v $(ROOT_DIR):$(ROOT_DIR) node:$(NODE_VERSION) npm
+SLS ?= $(DOCKER) run --user "$(shell id -u):$(shell id -g)" --rm --workdir=/opt/app -e AWS_PROFILE=$(AWS_PROFILE) -e LOCALSTACK_HOST=$(LOCALSTACK_HOST) -v $(ROOT_DIR)/$(PROJECT_PATH):/opt/app -v ~/.aws/:/.aws:ro $(SLS_DOCKER_IMAGE):$(SLS_VERSION) serverless
+NPM ?= $(DOCKER) run --user "$(shell id -u):$(shell id -g)" --rm --workdir=$(ROOT_DIR)/$(PROJECT_PATH) -v $(ROOT_DIR):$(ROOT_DIR) node:$(NODE_VERSION) npm
 
 # Serverless CLI Reference
 ########################################################################################################################

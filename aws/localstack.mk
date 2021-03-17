@@ -11,7 +11,7 @@ LOCALSTACK_WEB_UI_PORT ?= 8088
 LOCALSTACK_PORTS ?= "4510-4620"
 LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,cloudformation,sts,iam,acm,ec2,route53,ssm,cloudwatch,apigateway,ecs,ecr,events,serverless" #etc. serverless? api-gateway?
 
-CMD_LOCALSTACK_UP ?= @ ( $(DOCKER) run --user nobody -d --name localstack -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) \
+CMD_LOCALSTACK_UP ?= @ ( $(DOCKER) run --user "$(shell id -u):$(shell id -g)" -d --name localstack -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) \
 	-p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) \
 	-p 53:53 \
 	-p 443:443 \
