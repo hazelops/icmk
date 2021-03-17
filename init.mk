@@ -7,6 +7,9 @@ ICMK_VERSION ?= origin/master
 ICMK_REPO ?= https://github.com/hazelops/icmk.git
 ICMK_GIT_REVISION = $(shell cd $(INFRA_DIR)/icmk && $(GIT) rev-parse HEAD) $(shell cd $(INFRA_DIR)/icmk && $(GIT) describe --tags)
 
+CURRENT_USER_ID = $(shell id -u)
+CURRENT_USERGROUP_ID = $(shell id -g)
+
 # Tasks
 ########################################################################################################################
 .PHONY: update

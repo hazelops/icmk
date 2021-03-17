@@ -54,10 +54,10 @@ CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 
-CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run --user "$(shell id -u):$(shell id -g)" $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
+CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
-ECS ?= $(DOCKER) run --user "$(shell id -u):$(shell id -g)" -i --rm -v $(HOME)/.aws/:/.aws fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
-ECS_CLI ?= $(DOCKER) run --user "$(shell id -u):$(shell id -g)" \
+ECS ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -i --rm -v $(HOME)/.aws/:/.aws fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
+ECS_CLI ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
 	-i --rm -v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(HOME)/.aws/:/.aws \
 	-e AWS_PROFILE=$(AWS_PROFILE) \
