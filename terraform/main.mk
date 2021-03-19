@@ -87,7 +87,7 @@ terraform.13upgrade:
 	@ $(CMD_TERRAFORM_MODULES_UPGRADE)
 
 terraform.apply: terraform.plan ## Deploy infrastructure
-	@ cd $(ENV_DIR)/.terraform && \
+	@ cd $(ENV_DIR) && \
 	$(TERRAFORM) apply -input=false $(ENV_DIR)/.terraform/tfplan && \
 	$(TERRAFORM) output -json > $(ENV_DIR)/.terraform/output.json && \
 	$(CMD_SAVE_OUTPUT_TO_SSM)
