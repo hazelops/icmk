@@ -124,7 +124,7 @@ terraform.destroy-quiet: ## Destroy infrastructure without confirmation
 	@ echo "\n\033[36m[INFO] Please run: make secrets.delete or app.delete_secrets now\033[0m"
 
 terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json encoded in base64.
-	@ cd $(ENV_DIR)/.terraform && \
+	@ cd $(ENV_DIR) && \
 	$(CMD_SAVE_OUTPUT_TO_SSM)
 
 terraform.plan: terraform.init ## Terraform plan output for Github Action
