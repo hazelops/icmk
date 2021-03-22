@@ -4,7 +4,7 @@ SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
 SSH_PUBLIC_KEY_BASE64 = $(shell echo "$(SSH_PUBLIC_KEY)" | $(BASE64))
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
-OUTPUT_JSON_FILE = $(ENV_DIR)/output.json
+OUTPUT_JSON_FILE = $(ENV_DIR)/.terraform/output.json
 TERRAFORM_VERSION ?= "0.12.29"
 
 
@@ -23,10 +23,10 @@ AWS_LIMITS_LIST ?= $$(echo "{ \
 }")
 
 AWS_LIMITS ?= @ ( echo $(foreach item, $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -e -r '. | to_entries[] | .key' ), \
-"$$(if [ $(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/tfplan.txt) -lt $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].value') ]; \
+"$$(if [ $(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfplan.txt) -lt $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].value') ]; \
 then echo "\n\033[32m[OK]\033[0m $(item) limit"; \
 else echo "\n\033[33m[WARNING]\033[0m $(item) limit (Value:$(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].value')) exceeded! \
-Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/tfplan.txt) \
+Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfplan.txt) \
 \033[33m To request a service quota increase:\033[0m \033[36m aws service-quotas request-service-quota-increase --service-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].service') --quota-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].quotacode') --desired-value <your_desired_value> \033[0m"; fi )") )
 
 # Terraform Backend Config
@@ -88,8 +88,8 @@ terraform.13upgrade:
 
 terraform.apply: terraform.plan ## Deploy infrastructure
 	@ cd $(ENV_DIR) && \
-	$(TERRAFORM) apply -input=false tfplan && \
-	$(TERRAFORM) output -json > output.json	&& \
+	$(TERRAFORM) apply -input=false $(ENV_DIR)/.terraform/tfplan && \
+	$(TERRAFORM) output -json > $(ENV_DIR)/.terraform/output.json && \
 	$(CMD_SAVE_OUTPUT_TO_SSM)
 
 terraform.checkov: ## Test infrastructure with checkov
@@ -129,9 +129,9 @@ terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json en
 
 terraform.plan: terraform.init ## Terraform plan output for Github Action
 	@ cd $(ENV_DIR) && \
-	$(TERRAFORM) plan -out=tfplan -input=false && \
-	$(TERRAFORM) show tfplan -input=false -no-color > $(ENV_DIR)/tfplan.txt && \
-	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/tfplan.md
+	$(TERRAFORM) plan -out=$(ENV_DIR)/.terraform/tfplan -input=false && \
+	$(TERRAFORM) show $(ENV_DIR)/.terraform/tfplan -input=false -no-color > $(ENV_DIR)/.terraform/tfplan.txt && \
+	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/.terraform/tfplan.md
 
 terraform.limits: terraform.plan
 	@ $(AWS_LIMITS)
