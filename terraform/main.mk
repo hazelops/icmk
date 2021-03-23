@@ -62,6 +62,7 @@ terraform.debug:
 terraform.init: gomplate terraform
 	@ \
  	cd $(ENV_DIR) && \
+ 	mkdir -p $(ENV_DIR)/.terraform && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
