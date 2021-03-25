@@ -64,6 +64,8 @@ ECS_CLI ?= $(DOCKER) run \
 	-e AWS_REGION=$(AWS_REGION) \
 	jexperton/ecs-cli
 
+ECS_TASK_ERRORS = $(shell echo "Stopped Reason of the task deployment $(ECS_SERVICE_TASK_ID):" && $(AWS) ecs describe-tasks --cluster $(ECS_CLUSTER_NAME) --tasks arn:aws:ecs:$(AWS_REGION):$(AWS_ACCOUNT):task/$(ECS_CLUSTER_NAME)/$(ECS_SERVICE_TASK_ID) | $(JQ) -r '.tasks[].stoppedReason')
+
 # Tasks
 ########################################################################################################################
 ecr.login: aws
