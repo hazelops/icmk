@@ -5,22 +5,6 @@ SSH_PUBLIC_KEY_BASE64 = $(shell echo "$(SSH_PUBLIC_KEY)" | $(BASE64))
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 OUTPUT_JSON_FILE = $(ENV_DIR)/.terraform/output.json
-TERRAFORM_VERSION ?= "0.12.29"
-
-
-# AWS_LIMITS_LIST contains name of aws resources like we see in terraform plan output (example: aws_s3_bucket)
-# AWS resources have the following properties: limit value, name of aws service and quota code for raising a request.
-# If you need to check one more service limit - please just add a new service info to this json list 
-AWS_LIMITS_LIST ?= $$(echo "{ \
-\"aws_s3_bucket\":[ \
-	{\"value\":\"100\", \"service\":\"s3\", \"quotacode\":\"L-DC2B2D3D\"}], \
-\"aws_route53_health_check\":[ \
-	{\"value\":\"200\", \"service\":\"route53\", \"quotacode\":\"L-ACB674F3\"}], \
-\"aws_dynamodb_table\":[ \
-	{\"value\":\"256\", \"service\":\"dynamodb\", \"quotacode\":\"L-F98FE922\"}], \
-\"aws_eip\":[ \
-	{\"value\":\"5\", \"service\":\"vpc\", \"quotacode\":\"L-2AFB9258\"}] \
-}")
 
 AWS_LIMITS ?= @ ( echo $(foreach item, $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -e -r '. | to_entries[] | .key' ), \
 "$$(if [ $(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfplan.txt) -lt $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].value') ]; \
@@ -32,12 +16,10 @@ Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfp
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
 TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
-TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
 TFLOCK ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hazelops/tflock
-TF_LOG_LEVEL ?= 
 TF_LOG_PATH ?= /$(ENV_DIR)/tflog.txt
 TERRAFORM ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) -e TF_LOG=$(TF_LOG_LEVEL) -e TF_LOG_PATH=$(TF_LOG_PATH) hashicorp/terraform:$(TERRAFORM_VERSION)
 
