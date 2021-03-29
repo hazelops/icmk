@@ -1,15 +1,7 @@
 # Macroses
 ########################################################################################################################
-# Actual LOCALSTACK_API_KEY should be set in Makefile
-LOCALSTACK_API_KEY ?= 1234567Local
-# This can be overriden for different args, like setting an endpoint, like localstack
-LOCALSTACK_IMAGE ?= localstack/localstack
-LOCALSTACK_VERSION ?= latest
 LOCALSTACK_HOST ?= $(LOCALSTACK_CONTAINER_IP)
 LOCALSTACK_ENDPOINT ?= http://$(LOCALSTACK_HOST):4566
-LOCALSTACK_WEB_UI_PORT ?= 8088
-LOCALSTACK_PORTS ?= "4510-4620"
-LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,cloudformation,sts,iam,acm,ec2,route53,ssm,cloudwatch,apigateway,ecs,ecr,events,serverless" #etc. serverless? api-gateway?
 
 CMD_LOCALSTACK_UP ?= @ ( $(DOCKER) run -d --name localstack -p $(LOCALSTACK_WEB_UI_PORT):$(LOCALSTACK_WEB_UI_PORT) \
 	-p $(LOCALSTACK_PORTS):$(LOCALSTACK_PORTS) \
