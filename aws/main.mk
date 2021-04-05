@@ -15,11 +15,13 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) sts get-caller-identi
 AWS_DEV_ENV_NAME ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value') || echo "$(ENV) (User env is not configured)")
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
-AWS ?= $(DOCKER) run \
-	-v $(HOME)/.aws/:/root/.aws \
+AWS ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
+	-v $(HOME)/.aws/:/.aws \
 	-i \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \
 	-e AWS_REGION="$(AWS_REGION)" \
+	-e AWS_CONFIG_FILE="/.aws/config" \
+	-e AWS_SHARED_CREDENTIALS_FILE="/.aws/credentials" \
 	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
 
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail $(SERVICE_NAME) --follow
@@ -84,7 +86,7 @@ ssm-plugin.install:
 	@$(CMD_SSM_CLEANUP)
 ssm-plugin.check:
 ifeq (, $(shell which session-manager-plugin))
-	@echo "\033[31m[FAILED]\033[0m SSM Session Manager Plugin is not installed or incorrectly configured.\nPlease go to https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html and install manually"
+	@echo "\033[31m[FAILED]\033[0m Your SSM Session Manager Plugin is not installed or incorrectly configured.\n Use \033[33mmake ssm-plugin\033[0m to install it.\n Alternatively you can follow AWS Documentation \033[34mhttps://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html\033[0m \n and install it manually."
 else
 	@echo "\n\033[32m[OK]\033[0m SSM Session Manager Plugin is installed."
 endif

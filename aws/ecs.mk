@@ -3,18 +3,12 @@
 TAG ?= $(ENV)
 TAG_LATEST ?= $(ENV)-latest
 
-SCALE ?= 3
 ECS_CLUSTER_NAME ?= $(ENV)-$(NAMESPACE)
 ECS_SERVICE_NAME ?= $(SERVICE_NAME)
 ECS_TASK_NAME ?= $(ENV)-$(SVC)
 DOCKER_REGISTRY ?= $(AWS_ACCOUNT).dkr.ecr.$(AWS_REGION).amazonaws.com
 DOCKER_IMAGE_NAME ?= $(NAMESPACE)-$(SVC)
-DOCKERFILE ?= Dockerfile
-ECS_DEPLOY_VERSION ?= 1.10.1
-ENABLE_BUILDKIT ?= 1
 ENABLE_INLINE_CACHE ?= $(ENABLE_BUILDKIT)
-DOCKER_BUILD_ADDITIONAL_PARAMS ?=
-DOCKER_RUN_ADDITIONAL_PARAMS ?=
 
 ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
 ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
@@ -56,10 +50,10 @@ CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVI
 
 CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
-ECS ?= $(DOCKER) run -i --rm -v $(HOME)/.aws/:/root/.aws fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
+ECS ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -i --rm -v $(HOME)/.aws/:/.aws fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
 ECS_CLI ?= $(DOCKER) run \
 	-i --rm -v /var/run/docker.sock:/var/run/docker.sock \
-	-v $(HOME)/.aws/:/root/.aws \
+	-v $(HOME)/.aws/:/.aws \
 	-e AWS_PROFILE=$(AWS_PROFILE) \
 	-e AWS_REGION=$(AWS_REGION) \
 	jexperton/ecs-cli

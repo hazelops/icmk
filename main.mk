@@ -16,8 +16,6 @@ include $(INFRA_DIR)/icmk/*/*.mk
 # Get Service name. We're parsing Make task name and extracting SVC. So foo.bar or baz/foo.bar will result to SVC=foo
 SVC = $(shell echo $(@) | grep $(SLASHSIGN) > /dev/null && echo $$(echo $(@) | $(CUT) -d/ -f2 | $(CUT) -d. -f1) || echo $$(echo $(@) | $(CUT) -d. -f1))
 SVC_TYPE = $(shell echo $(SVC) | $(CUT) -d- -f1 )
-ENV_BASE = dev
-NPM_TOKEN ?= nil
 
 ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG = $(INFRA_DIR)/icmk/terraform/templates/backend.tf.gotmpl
 ICMK_TEMPLATE_TERRAFORM_VARS = $(INFRA_DIR)/icmk/terraform/templates/terraform.tfvars.gotmpl
@@ -84,16 +82,15 @@ README ?= @$$([ -f $(README_FILE) ]) && $$([ "$(README_FILE_1SYMBOL)" = "$(HASHS
 
 ## Tool Dependencies
 COMPOSE ?= $(shell which docker-compose)
-BUSYBOX_VERSION ?= 1.31.1
 
-JQ ?= $(DOCKER) run -v $(INFRA_DIR):$(INFRA_DIR) -i --rm colstrom/jq
-CUT ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) cut
-REV ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) rev
-BASE64 ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) base64
-AWK ?= $(DOCKER) run -i --rm busybox:$(BUSYBOX_VERSION) awk
+JQ ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -v $(INFRA_DIR):$(INFRA_DIR) -i --rm colstrom/jq
+CUT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -i --rm busybox:$(BUSYBOX_VERSION) cut
+REV ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -i --rm busybox:$(BUSYBOX_VERSION) rev
+BASE64 ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -i --rm busybox:$(BUSYBOX_VERSION) base64
+AWK ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -i --rm busybox:$(BUSYBOX_VERSION) awk
 
 
-GOMPLATE ?= $(DOCKER) run \
+GOMPLATE ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
 	-e ENV="$(ENV)" \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \
 	-e AWS_REGION="$(AWS_REGION)" \
@@ -145,7 +142,3 @@ jq:
 ifeq (, $(JQ))
 	$(error "jq is not installed or incorrectly configured.")
 endif
-
-# This is a workaround for syntax highlighters that break on a "Comment" symbol.
-HASHSIGN = \#
-SLASHSIGN = /

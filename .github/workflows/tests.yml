@@ -14,6 +14,28 @@ on:
   pull_request:
 
 jobs:
+  unit-tests:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    steps:
+
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.2.1
+
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Unit Tests
+        working-directory: .
+        run: bats tests/*.bats
+
   install-ssm-plugin:
     runs-on: ${{ matrix.os }}
 
