@@ -1,4 +1,4 @@
-function Create-AWS-Creds () {
+function create_aws_creds () {
   mkdir "${1}/.aws"
   cat << EOF > "${1}/.aws/credentials"
 [${2}]
@@ -8,7 +8,7 @@ region=us-east-1
 EOF
 }
 
-function Create-Makefile () {	
+function create_makefile () {	
   export MAKEFILES="${1}/Makefile"
   cat << EOF > "${MAKEFILES}"
 ROOT_DIR = $(pwd)/examples/simple

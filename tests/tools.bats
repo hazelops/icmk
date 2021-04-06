@@ -9,7 +9,7 @@ setup () {
   mkdir "${BATS_TEMP_DIR}"
   # create AWS creds stub
   export test_aws_profile_name="bats_profile"
-  Create-AWS-Creds "${BATS_TEMP_DIR}" "${test_aws_profile_name}"
+  create_aws_creds "${BATS_TEMP_DIR}" "${test_aws_profile_name}"
 }
 
 # post-actions after tests complete
@@ -20,7 +20,7 @@ teardown () {
 
 @test "Testing AWS docker container: should be successful" {
   # Create temp Makefie
-  Create-Makefile "${BATS_TEMP_DIR}" "@\$(AWS) \$(arg1)"
+  create_makefile "${BATS_TEMP_DIR}" "@\$(AWS) \$(arg1)"
   # Run TEST target 
   run make TEST \
       arg1="configure list-profiles" \
@@ -33,7 +33,7 @@ teardown () {
 
 @test "Testing TERRAFORM docker container: should be successful" {
   TERRAFORM_VERSION="0.13.5"
-  Create-Makefile "${BATS_TEMP_DIR}" "@\$(TERRAFORM) \$(arg1)"
+  create_makefile "${BATS_TEMP_DIR}" "@\$(TERRAFORM) \$(arg1)"
   run make TEST \
       arg1="-v" \
       HOME=${BATS_TEMP_DIR} \
@@ -45,7 +45,7 @@ teardown () {
 }
 
 @test "Testing JQ docker container: should be successful" {
-  Create-Makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(JQ) \$(arg2)"
+  create_makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(JQ) \$(arg2)"
   run make TEST \
       arg1="'{\"foo\":\"barzone\"}'" \
       arg2="-r '.foo'"
@@ -54,7 +54,7 @@ teardown () {
 }
 
 @test "Testing CUT docker container: should be successful" {
-  Create-Makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(CUT) \$(arg2)"
+  create_makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(CUT) \$(arg2)"
   run make TEST \
       arg1="123:4562020:789" \
       arg2="-d ':' -f 2" 
@@ -63,7 +63,7 @@ teardown () {
 }
 
 @test "Testing REV docker container: should be successful" {
-  Create-Makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(REV)"
+  create_makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(REV)"
   run make TEST \
       arg1="BATS is awesome" 
   assert_success
@@ -71,7 +71,7 @@ teardown () {
 }
 
 @test "Testing BASE64 docker container: should be successful" {
-  Create-Makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(BASE64) \$(arg2)"
+  create_makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(BASE64) \$(arg2)"
   run make TEST \
       arg1="QkFUUyBpcyBoYW5keQo=" \
       arg2="-d" 
@@ -80,7 +80,7 @@ teardown () {
 }
 
 @test "Testing AWK docker container: should be successful" {
-  Create-Makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(AWK) \$(arg2)"
+  create_makefile "${BATS_TEMP_DIR}" "@echo \$(arg1) | \$(AWK) \$(arg2)"
   run make TEST \
       arg1="foo barzone" \
       arg2="'{print}'" 
@@ -89,7 +89,7 @@ teardown () {
 }
 
 @test "Testing GOMPLATE docker container: should be successful" {
-  Create-Makefile "${BATS_TEMP_DIR}" "@\$(GOMPLATE) \$(arg1)"
+  create_makefile "${BATS_TEMP_DIR}" "@\$(GOMPLATE) \$(arg1)"
   run make TEST \
       arg1="-i 'answer is {{ mul 6 7 }}'" 
   assert_success
