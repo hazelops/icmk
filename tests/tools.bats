@@ -18,7 +18,7 @@ teardown () {
   rm -rf ${TEMP_DIR}
 }
 
-@test "Testig AWS docker container: should be successful" {
+@test "Testing AWS docker container: should be successful" {
   # Create temp Makefie
   Create-Makefile "${TEMP_DIR}" "@\$(AWS) \$(arg1)"
   # Run TEST target 
@@ -31,7 +31,7 @@ teardown () {
   assert_line "${test_aws_profile_name}"
 }
 
-@test "Testig TERRAFORM docker container: should be successful" {
+@test "Testing TERRAFORM docker container: should be successful" {
   TERRAFORM_VERSION="0.13.5"
   Create-Makefile "${TEMP_DIR}" "@\$(TERRAFORM) \$(arg1)"
   run make TEST \
@@ -44,7 +44,7 @@ teardown () {
   refute_line -p "The config profile"
 }
 
-@test "Testig JQ docker container: should be successful" {
+@test "Testing JQ docker container: should be successful" {
   Create-Makefile "${TEMP_DIR}" "@echo \$(arg1) | \$(JQ) \$(arg2)"
   run make TEST \
       arg1="'{\"foo\":\"barzone\"}'" \
@@ -53,7 +53,7 @@ teardown () {
   assert_line "barzone"
 }
 
-@test "Testig CUT docker container: should be successful" {
+@test "Testing CUT docker container: should be successful" {
   Create-Makefile "${TEMP_DIR}" "@echo \$(arg1) | \$(CUT) \$(arg2)"
   run make TEST \
       arg1="123:4562020:789" \
@@ -62,7 +62,7 @@ teardown () {
   assert_line "4562020"
 }
 
-@test "Testig REV docker container: should be successful" {
+@test "Testing REV docker container: should be successful" {
   Create-Makefile "${TEMP_DIR}" "@echo \$(arg1) | \$(REV)"
   run make TEST \
       arg1="BATS is awesome" 
@@ -70,7 +70,7 @@ teardown () {
   assert_line "emosewa si STAB"
 }
 
-@test "Testig BASE64 docker container: should be successful" {
+@test "Testing BASE64 docker container: should be successful" {
   Create-Makefile "${TEMP_DIR}" "@echo \$(arg1) | \$(BASE64) \$(arg2)"
   run make TEST \
       arg1="QkFUUyBpcyBoYW5keQo=" \
@@ -79,7 +79,7 @@ teardown () {
   assert_line "BATS is handy"
 }
 
-@test "Testig AWK docker container: should be successful" {
+@test "Testing AWK docker container: should be successful" {
   Create-Makefile "${TEMP_DIR}" "@echo \$(arg1) | \$(AWK) \$(arg2)"
   run make TEST \
       arg1="foo barzone" \
@@ -88,7 +88,7 @@ teardown () {
   assert_line "foo barzone"
 }
 
-@test "Testig GOMPLATE docker container: should be successful" {
+@test "Testing GOMPLATE docker container: should be successful" {
   Create-Makefile "${TEMP_DIR}" "@\$(GOMPLATE) \$(arg1)"
   run make TEST \
       arg1="-i 'answer is {{ mul 6 7 }}'" 
