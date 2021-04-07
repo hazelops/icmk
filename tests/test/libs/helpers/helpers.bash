@@ -1,3 +1,6 @@
+# It's kind of a mock function for creating aws credential profile 
+# in specified place. It should be used in test cases like:
+# $> create_aws_creds <specific path>
 function create_aws_creds () {
   mkdir "${1}/.aws"
   cat << EOF > "${1}/.aws/credentials"
@@ -8,6 +11,9 @@ region=us-east-1
 EOF
 }
 
+# Function allows developer to create test target with custom rules
+# in specified folder 
+# $> create_makefile <path> <custom rule or rules>
 function create_makefile () {	
   export MAKEFILES="${1}/Makefile"
   cat << EOF > "${MAKEFILES}"
