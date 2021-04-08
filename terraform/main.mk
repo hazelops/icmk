@@ -17,11 +17,24 @@ Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfp
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
 TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
-CHECKOV ?= $(DOCKER) run -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
-TFLINT ?= $(DOCKER) run --rm -v $(ENV_DIR):/data -t wata727/tflint
+CHECKOV ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
+TFLINT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --rm -v $(ENV_DIR):/data -t wata727/tflint
 TFLOCK ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hazelops/tflock
 TF_LOG_PATH ?= /$(ENV_DIR)/tflog.txt
-TERRAFORM ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) -e TF_LOG=$(TF_LOG_LEVEL) -e TF_LOG_PATH=$(TF_LOG_PATH) hashicorp/terraform:$(TERRAFORM_VERSION)
+TERRAFORM ?= $(DOCKER) run \
+	--user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
+	--rm \
+	--hostname=$(USER)-icmk-terraform \
+	-v $(ENV_DIR):/$(ENV_DIR) \
+	-v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" \
+	-v "$(INFRA_DIR)":"$(INFRA_DIR)" \
+	-v $(HOME)/.aws/:/.aws:ro \
+	-w $(ENV_DIR) \
+	-e AWS_PROFILE=$(AWS_PROFILE) \
+	-e ENV=$(ENV) \
+	-e TF_LOG=$(TF_LOG_LEVEL) \
+	-e TF_LOG_PATH=$(TF_LOG_PATH) \
+	hashicorp/terraform:$(TERRAFORM_VERSION)
 
 CMD_SAVE_OUTPUT_TO_SSM = $(AWS) ssm put-parameter --name "/$(ENV)/terraform-output" --type "SecureString" --tier "Intelligent-Tiering" --data-type "text" --overwrite --value "$$(cat $(OUTPUT_JSON_FILE) | $(BASE64))" > /dev/null && echo "\033[32m[OK]\033[0m Terraform output saved to ssm://$(ENV)/terraform-output" || (echo "\033[31m[ERROR]\033[0m Terraform output saving failed" && exit 1)
 
@@ -44,7 +57,6 @@ terraform.debug:
 terraform.init: gomplate terraform
 	@ \
  	cd $(ENV_DIR) && \
- 	mkdir -p $(ENV_DIR)/.terraform && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
