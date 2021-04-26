@@ -45,7 +45,7 @@ CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINIT
 CMD_ECS_SERVICE_SCALE = @$(ECS) scale --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_TASK_NAME) $(SCALE)
 CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 
-CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
+CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN) --force
 CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 
 CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
@@ -56,7 +56,7 @@ ECS_CLI ?= $(DOCKER) run \
 	-v $(HOME)/.aws/:/root/.aws \
 	-e AWS_PROFILE=$(AWS_PROFILE) \
 	-e AWS_REGION=$(AWS_REGION) \
-	jexperton/ecs-cli
+	hazelops/ecs-cli
 
 # Tasks
 ########################################################################################################################
