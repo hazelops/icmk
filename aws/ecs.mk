@@ -61,7 +61,7 @@ ECS_CLI ?= $(DOCKER) run \
 # Tasks
 ########################################################################################################################
 ecr.login: aws
-	@echo $(shell $(AWS) ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
+	@echo $(shell $(AWS) ecr get-login-password | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
 
 ecr-public.login: aws
 	@echo $(shell $(AWS) ecr-public get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
