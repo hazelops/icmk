@@ -40,7 +40,8 @@ CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)
 
-CMD_ECR_DOCKER_CLEAR_CACHE = @echo "Removing '$(TAG_LATEST)' tag from AWS ECR" && $(AWS) ecr batch-delete-image --repository-name $(DOCKER_IMAGE_NAME) --image-ids imageTag=$(TAG_LATEST) | $(JQ) -r '.failures[].failureReason' && echo "OK"
+CMD_ECR_DOCKER_CLEAR_CACHE = $(shell $(AWS) ecr batch-delete-image --repository-name $(DOCKER_IMAGE_NAME) --image-ids imageTag=$(TAG_LATEST) | $(JQ) -r '.failures[].failureReason')
+CMD_ECR_DOCKER_CLEAR_CACHE_OUTPUT = $$(if [ -z "$(shell echo $(CMD_ECR_DOCKER_CLEAR_CACHE) )" ];then echo "\n\033[32m[OK]\033[0m '$(TAG_LATEST)' tag was removed from AWS ECR"; else echo "\n\033[33m[WARNING]\033[0m $(CMD_ECR_DOCKER_CLEAR_CACHE)"; fi)
 
 # TODO: Add log polling instead of sleep?
 CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: https://console.aws.amazon.com/ecs/home?region=$(AWS_REGION)$(HASHSIGN)/clusters/$(ECS_CLUSTER_NAME)/tasks/$(ECS_SERVICE_TASK_ID)/details"
