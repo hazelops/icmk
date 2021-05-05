@@ -30,3 +30,5 @@ app.up:
 	$(CMD_SERVICE_LOCAL_UP)
 app.down:
 	$(CMD_SERVICE_LOCAL_DOWN)
+app.purge-cache:
+	$(CMD_ECR_DOCKER_CLEAR_CACHE)
