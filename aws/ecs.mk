@@ -64,9 +64,6 @@ AWS_CLI_ECR_LOGIN ?= $$(echo $$(if echo "$(DOCKER_REGISTRY)" | grep -Fqe "public
 ecr.login: aws
 	@echo $(shell $(AWS) $(AWS_CLI_ECR_LOGIN) get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
 
-#ecr-public.login: aws
-#	@echo $(shell $(AWS) ecr-public get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
-
 # Dependencies
 ########################################################################################################################
 # Ensures ecs-deploy is installed
