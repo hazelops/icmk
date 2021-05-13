@@ -61,8 +61,9 @@ ECS_CLI ?= $(DOCKER) run \
 
 # Tasks
 ########################################################################################################################
+AWS_CLI_ECR_LOGIN ?= $$(echo $$(if echo "$(DOCKER_REGISTRY)" | grep -Fqe "public"; then echo "ecr-public"; else echo "ecr"; fi))
 ecr.login: aws
-	@echo $(shell $(AWS) ecr get-login-password | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
+	@echo $(shell $(AWS) $(AWS_CLI_ECR_LOGIN) get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
 
 # Dependencies
 ########################################################################################################################
