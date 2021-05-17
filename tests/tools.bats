@@ -126,7 +126,7 @@ teardown () {
 
 @test "Testing NPM docker container: should be successful" {
   export NODE_VERSION="14-alpine3.10"
-  create_makefile '${BATS_TEMP_DIR}' \
+  create_makefile "${BATS_TEMP_DIR}" \
     '$(NPM) version'
   run make TEST
       
