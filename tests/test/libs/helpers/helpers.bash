@@ -19,8 +19,6 @@ function create_makefile () {
   cat << EOF > "${MAKEFILES}"
 ROOT_DIR = $(pwd)/examples/simple
 NAMESPACE = bats-test
-ICMK_VERSION ?= master
-
 include examples/simple/.infra/icmk/init.mk
 
 TEST:
