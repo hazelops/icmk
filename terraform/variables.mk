@@ -3,6 +3,7 @@
 # main variables
 TERRAFORM_VERSION ?= "0.12.29"
 
+TERRAFORM_AWS_PROVIDER_VERSION ?= "~> 3.0"
 # AWS_LIMITS_LIST contains name of aws resources like we see in terraform plan output (example: aws_s3_bucket)
 # AWS resources have the following properties: limit value, name of aws service and quota code for raising a request.
 # If you need to check one more service limit - please just add a new service info to this json list 

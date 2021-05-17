@@ -35,33 +35,35 @@ CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) buil
 	--build-arg PROJECT_PATH=$(PROJECT_PATH) \
 	$(DOCKER_BUILD_ADDITIONAL_PARAMS)
 
-
 CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)
+
+CMD_ECR_DOCKER_PURGE_CACHE = @echo "Removing '$(TAG_LATEST)' tag from AWS ECR" && $(AWS) ecr batch-delete-image --repository-name $(DOCKER_IMAGE_NAME) --image-ids imageTag=$(TAG_LATEST) | $(JQ) -er 'select(.failures[].failureReason != null) | def yellow: "\u001b[33m"; def reset: "\u001b[0m"; yellow + "[WARNING]:", reset + "\( .failures[].failureReason)"' || echo "\033[32m[OK]\033[0m '$(TAG_LATEST)' tag was removed from AWS ECR"
 
 # TODO: Add log polling instead of sleep?
 CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: https://console.aws.amazon.com/ecs/home?region=$(AWS_REGION)$(HASHSIGN)/clusters/$(ECS_CLUSTER_NAME)/tasks/$(ECS_SERVICE_TASK_ID)/details"
 CMD_ECS_SERVICE_SCALE = @$(ECS) scale --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_TASK_NAME) $(SCALE)
 CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 
-CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
+CMD_ECS_SERVICE_LOCAL_UP = $(ECS_CLI) local up --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN) --force
 CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVICE_TASK_DEFINITION_ARN)
 
 CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
-ECS ?= $(DOCKER) run -i --rm -v $(HOME)/.aws/:/root/.aws fabfuel/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
+ECS ?= $(DOCKER) run -i --rm -v $(HOME)/.aws/:/root/.aws hazelops/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
 ECS_CLI ?= $(DOCKER) run \
 	-i --rm -v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(HOME)/.aws/:/root/.aws \
 	-e AWS_PROFILE=$(AWS_PROFILE) \
 	-e AWS_REGION=$(AWS_REGION) \
-	jexperton/ecs-cli
+	hazelops/ecs-cli
 
 # Tasks
 ########################################################################################################################
+AWS_CLI_ECR_LOGIN ?= $$(echo $$(if echo "$(DOCKER_REGISTRY)" | grep -Fqe "public"; then echo "ecr-public"; else echo "ecr"; fi))
 ecr.login: aws
-	@echo $(shell $(AWS) ecr get-login-password | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
+	@echo $(shell $(AWS) $(AWS_CLI_ECR_LOGIN) get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
 
 # Dependencies
 ########################################################################################################################

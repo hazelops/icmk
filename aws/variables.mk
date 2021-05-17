@@ -1,12 +1,12 @@
 # This file should contain variables used in current module
 ##################################################################
 # main variables
-AWS_CLI_VERSION ?= 2.0.40
+AWS_CLI_VERSION ?= 2.2.0
 
 # ecs variables 
 SCALE ?= 3
 DOCKERFILE ?= Dockerfile
-ECS_DEPLOY_VERSION ?= 1.10.1
+ECS_DEPLOY_VERSION ?= latest
 ENABLE_BUILDKIT ?= 1
 DOCKER_BUILD_ADDITIONAL_PARAMS ?=
 DOCKER_RUN_ADDITIONAL_PARAMS ?=
