@@ -41,7 +41,10 @@ CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)
 
 # TODO: Add log polling instead of sleep?
-CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: https://console.aws.amazon.com/ecs/home?region=$(AWS_REGION)$(HASHSIGN)/clusters/$(ECS_CLUSTER_NAME)/tasks/$(ECS_SERVICE_TASK_ID)/details"
+CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id $(ECS_SERVICE_TASK_ID) --cluster $(ECS_CLUSTER_NAME) >/dev/null
+CMD_ECS_SERVICE_TASK_LOG2 = $$(echo $(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)")
+CMD_ECS_SERVICE_TASK_GET_LOG = until $(CMD_ECS_SERVICE_TASK_LOG); do echo "waiting"; done && $(CMD_ECS_SERVICE_TASK_LOG2)
+CMD_ECS_SERVICE_TASK_RUN = @echo "Task for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: \n " && $(CMD_ECS_SERVICE_TASK_GET_LOG) #&& sleep 1 && $(CMD_ECS_SERVICE_TASK_LOG2)
 CMD_ECS_SERVICE_SCALE = @$(ECS) scale --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_TASK_NAME) $(SCALE)
 CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
 
