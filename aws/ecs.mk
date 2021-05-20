@@ -36,7 +36,6 @@ CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) buil
 	--build-arg PROJECT_PATH=$(PROJECT_PATH) \
 	$(DOCKER_BUILD_ADDITIONAL_PARAMS)
 
-
 CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)
@@ -45,6 +44,8 @@ CMD_ECS_SERVICE_TASK_ID = $$(cat "$(ECS_SERVICE_TASK_ID_TEMPFILE)")
 CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id "$(CMD_ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps --follow
 CMD_ECS_SERVICE_TASK_GET_LOG = until echo $$($(ECS_CLI) logs --task-id "$(CMD_ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps) | grep -Fqe "Z "; do sleep 2; done
 CMD_ECS_SERVICE_TASK_RUN = @echo "Task $(ECS_SERVICE_TASK_ID) for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: \n " && $(CMD_ECS_SERVICE_TASK_GET_LOG) && $(CMD_ECS_SERVICE_TASK_LOG) && rm -fr "$(ECS_SERVICE_TASK_ID_TEMPFILE)"
+
+CMD_ECR_DOCKER_PURGE_CACHE = @echo "Removing '$(TAG_LATEST)' tag from AWS ECR" && $(AWS) ecr batch-delete-image --repository-name $(DOCKER_IMAGE_NAME) --image-ids imageTag=$(TAG_LATEST) | $(JQ) -er 'select(.failures[].failureReason != null) | def yellow: "\u001b[33m"; def reset: "\u001b[0m"; yellow + "[WARNING]:", reset + "\( .failures[].failureReason)"' || echo "\033[32m[OK]\033[0m '$(TAG_LATEST)' tag was removed from AWS ECR"
 
 CMD_ECS_SERVICE_SCALE = @$(ECS) scale --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_TASK_NAME) $(SCALE)
 CMD_ECS_SERVICE_DESTROY = echo "Destroy $(SVC) is not implemented"
@@ -64,8 +65,9 @@ ECS_CLI ?= $(DOCKER) run \
 
 # Tasks
 ########################################################################################################################
+AWS_CLI_ECR_LOGIN ?= $$(echo $$(if echo "$(DOCKER_REGISTRY)" | grep -Fqe "public"; then echo "ecr-public"; else echo "ecr"; fi))
 ecr.login: aws
-	@echo $(shell $(AWS) ecr get-login-password | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
+	@echo $(shell $(AWS) $(AWS_CLI_ECR_LOGIN) get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(DOCKER_REGISTRY))
 
 # Dependencies
 ########################################################################################################################

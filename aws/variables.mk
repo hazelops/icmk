@@ -1,7 +1,7 @@
 # This file should contain variables used in current module
 ##################################################################
 # main variables
-AWS_CLI_VERSION ?= 2.0.40
+AWS_CLI_VERSION ?= 2.2.0
 
 # ecs variables 
 SCALE ?= 3
