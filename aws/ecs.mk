@@ -16,7 +16,6 @@ SSM_OUTPUT_JSON = $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-out
 
 # This is required due to a bug in Docker Multistage + Cache configuration.
 ECS_SERVICE_DOCKER_BUILD_CACHE_PARAMETER ?= $(shell [ "$(ENABLE_BUILDKIT)" = "1" ] && echo "--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)" || echo "" )
-#ECS_SERVICE_DOCKER_BUILD_CACHE_PARAMETER ?= $$(if [ "$(ENABLE_BUILDKIT)" = "1" ]; then echo "--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)"; else echo ""; fi)
 
 ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs run-task --cluster $(ECS_CLUSTER_NAME) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" --network-configuration '$(ECS_SERVICE_TASK_NETWORK_CONFIG)' --launch-type "$(ECS_SERVICE_TASK_LAUNCH_TYPE)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV) && sleep 1)
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
