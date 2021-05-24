@@ -17,8 +17,7 @@ SSM_OUTPUT_JSON = $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-out
 # This is required due to a bug in Docker Multistage + Cache configuration.
 ECS_SERVICE_DOCKER_BUILD_CACHE_PARAMETER = $(shell [[ "$(ENABLE_BUILDKIT)" == "1" ]] && echo "--cache-from $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)" || echo "" )
 
-ECS_SERVICE_TASK_ID_TEMPFILE = $(INFRA_DIR)/ecs_task_id
-ECS_SERVICE_TASK_ID = $(shell $(AWS) ecs run-task --cluster $(ECS_CLUSTER_NAME) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" --network-configuration '$(ECS_SERVICE_TASK_NETWORK_CONFIG)' --launch-type "$(ECS_SERVICE_TASK_LAUNCH_TYPE)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV) | tee $(ECS_SERVICE_TASK_ID_TEMPFILE) && sleep 1)
+ECS_SERVICE_TASK_ID = $(eval ECS_SERVICE_TASK_ID := $(shell $(AWS) ecs run-task --cluster $(ECS_CLUSTER_NAME) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" --network-configuration '$(ECS_SERVICE_TASK_NETWORK_CONFIG)' --launch-type "$(ECS_SERVICE_TASK_LAUNCH_TYPE)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV)))$(ECS_SERVICE_TASK_ID)
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
 
 CMD_ECS_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_SERVICE_TASK_DEFINITION_ARN) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --rollback -e $(SVC) DD_VERSION $(TAG)
@@ -40,10 +39,9 @@ CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)
 
-CMD_ECS_SERVICE_TASK_ID = $$(cat "$(ECS_SERVICE_TASK_ID_TEMPFILE)")
-CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id "$(CMD_ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps --follow
-CMD_ECS_SERVICE_TASK_GET_LOG = until echo $$($(ECS_CLI) logs --task-id "$(CMD_ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps) | grep -Fqe "Z "; do sleep 2; done
-CMD_ECS_SERVICE_TASK_RUN = @echo "Task $(ECS_SERVICE_TASK_ID) for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: \n " && $(CMD_ECS_SERVICE_TASK_GET_LOG) && $(CMD_ECS_SERVICE_TASK_LOG) && rm -fr "$(ECS_SERVICE_TASK_ID_TEMPFILE)"
+CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps --follow
+CMD_ECS_SERVICE_TASK_GET_LOG = until echo $$($(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps) | grep -Fqe "Z "; do sleep 2; done
+CMD_ECS_SERVICE_TASK_RUN = @echo "Task $(ECS_SERVICE_TASK_ID) for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: \n " && $(CMD_ECS_SERVICE_TASK_GET_LOG) && $(CMD_ECS_SERVICE_TASK_LOG)
 
 CMD_ECR_DOCKER_PURGE_CACHE = @echo "Removing '$(TAG_LATEST)' tag from AWS ECR" && $(AWS) ecr batch-delete-image --repository-name $(DOCKER_IMAGE_NAME) --image-ids imageTag=$(TAG_LATEST) | $(JQ) -er 'select(.failures[].failureReason != null) | def yellow: "\u001b[33m"; def reset: "\u001b[0m"; yellow + "[WARNING]:", reset + "\( .failures[].failureReason)"' || echo "\033[32m[OK]\033[0m '$(TAG_LATEST)' tag was removed from AWS ECR"
 
