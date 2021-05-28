@@ -118,8 +118,18 @@ teardown () {
   export arg1="-i 'answer is {{ mul 6 7 }}'"
   create_makefile "${BATS_TEMP_DIR}" \
     '@$(GOMPLATE) $(arg1)'
-  run make TEST \
-       
+  run make TEST
+
   assert_success
   assert_line "answer is 42"
+}
+
+@test "Testing NPM docker container: should be successful" {
+  export NODE_VERSION="14-alpine3.10"
+  create_makefile "${BATS_TEMP_DIR}" \
+    '$(NPM) version'
+  run make TEST
+      
+  assert_success
+  assert_output -p "node: '14."
 }
