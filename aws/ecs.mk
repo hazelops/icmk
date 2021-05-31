@@ -39,7 +39,7 @@ CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)
 
-CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps --follow
+CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps
 CMD_ECS_SERVICE_TASK_GET_LOG = until echo $$($(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps) | grep -Fqe "Z "; do sleep 2; done
 CMD_ECS_SERVICE_TASK_RUN = @echo "Task $(ECS_SERVICE_TASK_ID) for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: \n " && $(CMD_ECS_SERVICE_TASK_GET_LOG) && $(CMD_ECS_SERVICE_TASK_LOG)
 
