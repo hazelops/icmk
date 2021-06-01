@@ -49,7 +49,7 @@ SERVICE_NAME ?= $(ENV)-$(SVC)
 .PHONY: auth help
 all: help
 
-env.debug: icmk.debug os.debug aws.debug
+env.debug: prereqs icmk.debug os.debug aws.debug
 icmk.debug:
 	@echo "\033[32m=== ICMK Info ===\033[0m"
 	@echo "\033[36mENV\033[0m: $(ENV)"
