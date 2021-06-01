@@ -116,14 +116,6 @@ ECHO = @echo
 
 # Dependencies
 ########################################################################################################################
-# Ensures docker is installed - does not enforce version, please use latest
-docker:
-ifeq (, $(DOCKER))
-	$(error "Docker is not installed or incorrectly configured. https://www.docker.com/")
-#else
-#	@$(DOCKER) --version
-endif
-
 # Ensures docker-compose is installed - does not enforce.
 docker-compose: docker
 ifeq (, $(COMPOSE))
