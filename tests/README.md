@@ -97,13 +97,13 @@ To create tests you need:
 For running tests without junit report please do following:
 ```bash
 cd tests
-make unit-test
+make test
 ```
 
 On the other hand to run unit tests with junit report please do following:
 ```bash
 cd tests
-make unit-test-report
+make report
 ```
 Where `report.xml` file will be written to `tests` directory.
 

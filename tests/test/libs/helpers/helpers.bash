@@ -14,14 +14,16 @@ EOF
 # Function allows developer to create test target with custom rules
 # in specified folder 
 # $> create_makefile <path> <custom rule or rules>
-function create_makefile () {	
+function create_makefile () {
+  TARGET_NAME="${3:-TEST}"	
   export MAKEFILES="${1}/Makefile"
   cat << EOF > "${MAKEFILES}"
+SHELL := bash
 ROOT_DIR = $(pwd)/examples/simple
 NAMESPACE = bats-test
 include examples/simple/.infra/icmk/init.mk
 
-TEST:
+${TARGET_NAME}:
 	${2}
 EOF
 }

@@ -1,4 +1,5 @@
 # For unit tests
+SHELL = bash
 TESTS_PATH = tests
 BATS_BIN_PATH = $(TESTS_PATH)/test/libs/bats/bin
 BATS = $(BATS_BIN_PATH)/bats
