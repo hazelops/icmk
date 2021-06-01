@@ -1,6 +1,3 @@
-# This ensures we include main.mk and variables.mk only if it's there. If not we don't error out (IE in case of bootstrap)
--include $(INFRA_DIR)/icmk/main.mk
--include $(INFRA_DIR)/icmk/variables.mk
 # Macroses
 ########################################################################################################################
 ROOT_DIR ?= $(shell pwd)
@@ -84,7 +81,10 @@ else
 	@echo "\033[32m✔ SSH Public Key\033[0m"
 endif
 
-
 #EXECUTABLES = $(GIT) $(DOCKER) aws
 #K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) found in PATH. Please install it.")))
+
+# This ensures we include main.mk and variables.mk only if it's there. If not we don't error out (IE in case of bootstrap)
+-include $(INFRA_DIR)/icmk/main.mk
+-include $(INFRA_DIR)/icmk/variables.mk
