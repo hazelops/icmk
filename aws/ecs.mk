@@ -21,6 +21,7 @@ ECS_SERVICE_TASK_ID = $(eval ECS_SERVICE_TASK_ID := $(shell $(AWS) ecs run-task 
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
 
 CMD_ECS_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_SERVICE_TASK_DEFINITION_ARN) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --rollback -e $(SVC) DD_VERSION $(TAG)
+CMD_ECS_SERVICE_REDEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) --region $(AWS_REGION)  $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --diff --rollback
 CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) build \
 	. \
 	-t $(DOCKER_IMAGE_NAME) \
@@ -84,6 +85,7 @@ endif
 # Backwards Compatibility, should be removed in 2.0
 ########################################################################################################################
 CMD_SERVICE_DEPLOY = $(CMD_ECS_SERVICE_DEPLOY)
+CMD_SERVICE_REDEPLOY = $(CMD_ECS_SERVICE_REDEPLOY)
 CMD_SERVICE_DOCKER_BUILD = $(CMD_ECS_SERVICE_DOCKER_BUILD)
 CMD_SERVICE_DOCKER_PUSH = $(CMD_ECS_SERVICE_DOCKER_PUSH)
 CMD_SERVICE_TASK_RUN = $(CMD_ECS_SERVICE_TASK_RUN)

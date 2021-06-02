@@ -20,3 +20,10 @@ LOCALSTACK_VERSION ?= latest
 LOCALSTACK_WEB_UI_PORT ?= 8088
 LOCALSTACK_PORTS ?= "4510-4620"
 LOCALSTACK_SERVICE_LIST ?= "dynamodb,s3,lambda,cloudformation,sts,iam,acm,ec2,route53,ssm,cloudwatch,apigateway,ecs,ecr,events,serverless" #etc. serverless? api-gateway?
+
+# Maximum time for RDS Failover execution, in minutes
+RDS_FAILOVER_TIMEOUT ?= 5
+# Timeout of RDS Failover check, in seconds
+RDS_FAILOVER_LOOP_TIMEOUT ?= 3
+# Default suffix for RDS DB Identifier
+RDS_DB_SUFFIX ?= APP-DB
