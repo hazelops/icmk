@@ -43,7 +43,7 @@ CMD_ECS_SERVICE_DOCKER_PUSH = \
 # Checks every 5 seconds the task status and goes on once task status is not RUNNING
 ECS_SERVICE_TASK_ID_STATUS = printf "%s" "Task $(ECS_SERVICE_TASK_ID) is running ."; until [ $$($(AWS) ecs describe-tasks --cluster $(ECS_CLUSTER_NAME) --tasks arn:aws:ecs:$(AWS_REGION):$(AWS_ACCOUNT):task/$(ECS_CLUSTER_NAME)/$(ECS_SERVICE_TASK_ID) | jq -r '.tasks[].lastStatus') != RUNNING ]; do printf "%s" "."; sleep 5; done 
 # Composes the respective exit code. Event though one of task's containers has non zero exit code macros fails
-ECS_SERVICE_TASK_ID_EXIT = $(AWS) ecs describe-tasks --cluster $(ECS_CLUSTER_NAME) --tasks arn:aws:ecs:$(AWS_REGION):$(AWS_ACCOUNT):task/$(ECS_CLUSTER_NAME)/$(ECS_SERVICE_TASK_ID) | jq -r '.tasks[].containers[].exitCode' | while read EXIT_CODE; do if [ "$${EXIT_CODE}" != "0" ]; then printf "%s\n" " stopped with issues"; exit 1; fi; done; printf "%s\n" " completed successfully"
+ECS_SERVICE_TASK_ID_EXIT = FLAG=0; $(AWS) ecs describe-tasks --cluster $(ECS_CLUSTER_NAME) --tasks arn:aws:ecs:$(AWS_REGION):$(AWS_ACCOUNT):task/$(ECS_CLUSTER_NAME)/$(ECS_SERVICE_TASK_ID) | jq -r '.tasks[].containers[].exitCode' | while read EXIT_CODE; do if [ "$${EXIT_CODE}" != "0" ]; then printf "%s\n" " stopped with issue"; exit 1; fi; done
 
 CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps
 CMD_ECS_SERVICE_TASK_GET_LOG = until echo $$($(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps) | grep -Fqe "Z "; do sleep 2; done
