@@ -40,9 +40,14 @@ CMD_ECS_SERVICE_DOCKER_PUSH = \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) && \
 	$(DOCKER) push $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG_LATEST)
 
+# Checks every 5 seconds the task status and goes on once task status is not RUNNING
+CMD_ECS_SERVICE_TASK_STOP_WAIT = printf "%s" "Task $(ECS_SERVICE_TASK_ID) is running ."; until [ $$($(AWS) ecs describe-tasks --cluster $(ECS_CLUSTER_NAME) --tasks arn:aws:ecs:$(AWS_REGION):$(AWS_ACCOUNT):task/$(ECS_CLUSTER_NAME)/$(ECS_SERVICE_TASK_ID) | jq -r '.tasks[].lastStatus') != RUNNING ]; do printf "%s" "."; sleep 5; done 
+# Composes the respective exit code. Event though one of task's containers has non zero exit code macros fails
+CMD_ECS_SERVICE_TASK_EXIT_CODE_GET = FLAG=0; $(AWS) ecs describe-tasks --cluster $(ECS_CLUSTER_NAME) --tasks arn:aws:ecs:$(AWS_REGION):$(AWS_ACCOUNT):task/$(ECS_CLUSTER_NAME)/$(ECS_SERVICE_TASK_ID) | jq -r '.tasks[].containers[].exitCode' | while read EXIT_CODE; do if [ "$${EXIT_CODE}" != "0" ]; then printf "%s\n" " stopped with issue"; exit $${EXIT_CODE}; fi; done
+
 CMD_ECS_SERVICE_TASK_LOG = $(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps
 CMD_ECS_SERVICE_TASK_GET_LOG = until echo $$($(ECS_CLI) logs --task-id "$(ECS_SERVICE_TASK_ID)" --cluster "$(ECS_CLUSTER_NAME)" --timestamps) | grep -Fqe "Z "; do sleep 2; done
-CMD_ECS_SERVICE_TASK_RUN = @echo "Task $(ECS_SERVICE_TASK_ID) for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: \n " && $(CMD_ECS_SERVICE_TASK_GET_LOG) && $(CMD_ECS_SERVICE_TASK_LOG)
+CMD_ECS_SERVICE_TASK_RUN = @echo "Task $(ECS_SERVICE_TASK_ID) for definition $(ECS_SERVICE_TASK_DEFINITION_ARN) has been started.\nLogs: \n " && $(CMD_ECS_SERVICE_TASK_GET_LOG) && $(CMD_ECS_SERVICE_TASK_LOG) && $(CMD_ECS_SERVICE_TASK_STOP_WAIT) && $(CMD_ECS_SERVICE_TASK_EXIT_CODE_GET)
 
 CMD_ECR_DOCKER_PURGE_CACHE = @echo "Removing '$(TAG_LATEST)' tag from AWS ECR" && $(AWS) ecr batch-delete-image --repository-name $(DOCKER_IMAGE_NAME) --image-ids imageTag=$(TAG_LATEST) | $(JQ) -er 'select(.failures[].failureReason != null) | def yellow: "\u001b[33m"; def reset: "\u001b[0m"; yellow + "[WARNING]:", reset + "\( .failures[].failureReason)"' || echo "\033[32m[OK]\033[0m '$(TAG_LATEST)' tag was removed from AWS ECR"
 
