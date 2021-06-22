@@ -18,7 +18,7 @@ WAYPOINT ?= $(DOCKER) run \
 	$(WAYPOINT_DOCKER_IMAGE):$(WAYPOINT_VERSION)
 
 CMD_WAYPOINT_SERVICE_BUILD ?= \
-	\
+	@\
      	cd $(ENV_DIR) && \
     	cat $(WAYPOINT_CONFIG_FILE).gotpl | $(GOMPLATE) > $(WAYPOINT_CONFIG_FILE) && \
     	$(WAYPOINT) build -app $(SVC)
@@ -63,7 +63,6 @@ waypoint.config:
 waypoint.init: gomplate waypoint-dependency
 	$(CMD_WAYPOINT_INIT)
 	$(CMD_WAYPOINT_CONFIG_SET)
-
 
 waypoint.install: gomplate waypoint-dependency
 	$(CMD_WAYPOINT_INSTALL)
