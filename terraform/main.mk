@@ -1,6 +1,6 @@
 # Macroses
 ########################################################################################################################
-SSH_PUBLIC_KEY ?= $(shell cat ~/.ssh/id_rsa.pub)
+SSH_PUBLIC_KEY ?= $$(cat ~/.ssh/id_rsa.pub)
 SSH_PUBLIC_KEY_BASE64 = $(shell echo "$(SSH_PUBLIC_KEY)" | $(BASE64))
 EC2_KEY_PAIR_NAME ?= $(ENV)-$(NAMESPACE)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
