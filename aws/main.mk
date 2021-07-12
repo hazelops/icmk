@@ -15,7 +15,7 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) sts get-caller-identi
 AWS_DEV_ENV_NAME ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value') || echo "$(ENV) (User env is not configured)")
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
-AWS ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --platform "linux/amd64" \
+AWS_ARM ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --platform "linux/amd64" \
 	-v $(HOME)/.aws/:/.aws \
 	-i \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \
@@ -23,6 +23,17 @@ AWS ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --platf
 	-e AWS_CONFIG_FILE="/.aws/config" \
 	-e AWS_SHARED_CREDENTIALS_FILE="/.aws/credentials" \
 	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
+
+AWS_DEFAULT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
+	-v $(HOME)/.aws/:/.aws \
+	-i \
+	-e AWS_PROFILE="$(AWS_PROFILE)" \
+	-e AWS_REGION="$(AWS_REGION)" \
+	-e AWS_CONFIG_FILE="/.aws/config" \
+	-e AWS_SHARED_CREDENTIALS_FILE="/.aws/credentials" \
+	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
+
+AWS ?= $(shell echo $$(if [ "$(LINUX_ARCH)" = "arm64" ]; then echo "$(AWS_ARM)"; else echo "$(AWS_DEFAULT)"; fi))
 
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail $(SERVICE_NAME) --follow --format "short"
 CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
