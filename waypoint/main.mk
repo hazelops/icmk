@@ -20,38 +20,51 @@ WAYPOINT ?= $(DOCKER) run \
 CMD_WAYPOINT_SERVICE_BUILD ?= \
 	@\
      	cd $(ENV_DIR) && \
-    	cat $(WAYPOINT_CONFIG_FILE).gotpl | $(GOMPLATE) > $(WAYPOINT_CONFIG_FILE) && \
-    	$(WAYPOINT) build -app $(SVC)
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+    	$(WAYPOINT) build -var-file=waypoint.wpvars -app $(SVC)
 
 CMD_WAYPOINT_SERVICE_DEPLOY ?= \
 	@\
      	cd $(ENV_DIR) && \
-    	cat $(WAYPOINT_CONFIG_FILE).gotpl | $(GOMPLATE) > $(WAYPOINT_CONFIG_FILE) && \
-    	$(WAYPOINT) deploy -release=false -app $(SVC)
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+    	$(WAYPOINT) deploy -var-file=waypoint.wpvars -release=false -app $(SVC)
 
 CMD_WAYPOINT_SERVICE_RELEASE ?= \
 	@\
      	cd $(ENV_DIR) && \
-    	cat $(WAYPOINT_CONFIG_FILE).gotpl | $(GOMPLATE) > $(WAYPOINT_CONFIG_FILE) && \
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
     	$(WAYPOINT) release -app $(SVC)
 
 CMD_WAYPOINT_INIT ?= \
 	@\
      	cd $(ENV_DIR) && \
-    	cat $(WAYPOINT_CONFIG_FILE).gotpl | $(GOMPLATE) > $(WAYPOINT_CONFIG_FILE) && \
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
     	$(WAYPOINT) init
 
 CMD_WAYPOINT_INSTALL ?= \
 	@\
      	cd $(ENV_DIR) && \
-    	cat $(WAYPOINT_CONFIG_FILE).gotpl | $(GOMPLATE) > $(WAYPOINT_CONFIG_FILE) && \
+		cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
     	$(WAYPOINT) install -accept-tos -platform=ecs -ecs-cluster=$(WAYPOINT_ECS_CLUSTER_NAME) -ecs-region=$(AWS_REGION) -runner=$(WAYPOINT_RUNNER_ENABLED) -ecs-server-image=$(WAYPOINT_DOCKER_IMAGE):$(WAYPOINT_VERSION)
+
+CMD_WAYPOINT_UNINSTALL ?= \
+	@\
+     	cd $(ENV_DIR) && \
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+    	$(WAYPOINT) server uninstall -platform=ecs -ecs-cluster=$(WAYPOINT_ECS_CLUSTER_NAME) -ecs-region=$(AWS_REGION)
 
 CMD_WAYPOINT_DESTROY ?= \
 	@\
      	cd $(ENV_DIR) && \
-    	cat $(WAYPOINT_CONFIG_FILE).gotpl | $(GOMPLATE) > $(WAYPOINT_CONFIG_FILE) && \
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
     	$(WAYPOINT) destroy -auto-approve
+
+CMD_WAYPOINT_AUTH ?= \
+	@\
+     	cd $(ENV_DIR) && \
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+    	$(WAYPOINT) token new
+
 
 CMD_WAYPOINT_CONFIG_SET ?= @$(WAYPOINT) config source-set --type=aws-ssm --config region=$(AWS_REGION)
 # Tasks
@@ -67,8 +80,20 @@ waypoint.init: gomplate waypoint-dependency
 waypoint.install: gomplate waypoint-dependency
 	$(CMD_WAYPOINT_INSTALL)
 
+waypoint.auth: gomplate waypoint-dependency
+	$(CMD_WAYPOINT_AUTH)
+
 waypoint.destroy: gomplate waypoint-dependency
 	$(CMD_WAYPOINT_DESTROY)
+
+waypoint.uninstall: gomplate waypoint-dependency
+	$(CMD_WAYPOINT_UNINSTALL)
+
+
+waypoint.debug: waypoint-dependency
+	@echo "\033[32m=== Waypoint Info ===\033[0m"
+	@echo "\033[36mDocker Image\033[0m: $(WAYPOINT_DOCKER_IMAGE):$(WAYPOINT_VERSION)"
+	@echo "\033[36mVersion\033[0m: $(shell $(WAYPOINT) version)"
 
 # Dependencies
 ########################################################################################################################
