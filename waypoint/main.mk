@@ -1,6 +1,6 @@
 # Macroses
 ########################################################################################################################
-
+# TODO: Waypoint Config mount is MacOS-only for now. Needs to be platform-independent
 WAYPOINT ?= $(DOCKER) run \
 	--user "root":"$(CURRENT_USERGROUP_ID)" \
 	--rm \
@@ -9,6 +9,8 @@ WAYPOINT ?= $(DOCKER) run \
 	-v "$(INFRA_DIR)":"$(INFRA_DIR)" \
 	-v "$(ROOT_DIR)":"$(ROOT_DIR)" \
 	-v "$(HOME)/.aws/":"/home/waypoint/.aws:ro" \
+	-v "$(HOME)/Library/Preferences/waypoint":"/home/waypoint/.config/waypoint" \
+	-v "$(HOME)/.waypoint/":"/home/waypoint/.waypoint" \
 	-v "$(HOME)/.aws/":"/root/.aws:ro" \
 	-v "/var/run/docker.sock":"/var/run/docker.sock" \
 	-w "$(ENV_DIR)" \
@@ -51,13 +53,27 @@ CMD_WAYPOINT_UNINSTALL ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
-    	$(WAYPOINT) server uninstall -platform=ecs -ecs-cluster=$(WAYPOINT_ECS_CLUSTER_NAME) -ecs-region=$(AWS_REGION)
+    	$(WAYPOINT) server uninstall -platform=ecs -ecs-cluster=$(WAYPOINT_ECS_CLUSTER_NAME) -ecs-region=$(AWS_REGION) -auto-approve -ignore-runner-error
 
 CMD_WAYPOINT_DESTROY ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
     	$(WAYPOINT) destroy -auto-approve
+
+
+CMD_WAYPOINT_CONTEXT_CREATE ?= \
+	@\
+     	cd $(ENV_DIR) && \
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+    	$(WAYPOINT) context create test1
+
+CMD_WAYPOINT_CONTEXT_CLEAR ?= \
+	@\
+     	cd $(ENV_DIR) && \
+    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+    	$(WAYPOINT) context clear
+
 
 CMD_WAYPOINT_AUTH ?= \
 	@\
@@ -74,6 +90,7 @@ waypoint.config:
 	$(CMD_WAYPOINT_CONFIG_SET)
 
 waypoint.init: gomplate waypoint-dependency
+	$(CMD_WAYPOINT_CONTEXT_CLEARн)
 	$(CMD_WAYPOINT_INIT)
 	$(CMD_WAYPOINT_CONFIG_SET)
 
@@ -89,7 +106,8 @@ waypoint.destroy: gomplate waypoint-dependency
 waypoint.uninstall: gomplate waypoint-dependency
 	$(CMD_WAYPOINT_UNINSTALL)
 
-
+waypoint.context-create:
+	$(CMD_WAYPOINT_CONTEXT_CREATE)
 waypoint.debug: waypoint-dependency
 	@echo "\033[32m=== Waypoint Info ===\033[0m"
 	@echo "\033[36mDocker Image\033[0m: $(WAYPOINT_DOCKER_IMAGE):$(WAYPOINT_VERSION)"
