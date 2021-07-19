@@ -61,20 +61,6 @@ CMD_WAYPOINT_DESTROY ?= \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
     	$(WAYPOINT) destroy -auto-approve
 
-
-CMD_WAYPOINT_CONTEXT_CREATE ?= \
-	@\
-     	cd $(ENV_DIR) && \
-    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
-    	$(WAYPOINT) context create test1
-
-CMD_WAYPOINT_CONTEXT_CLEAR ?= \
-	@\
-     	cd $(ENV_DIR) && \
-    	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
-    	$(WAYPOINT) context clear
-
-
 CMD_WAYPOINT_AUTH ?= \
 	@\
      	cd $(ENV_DIR) && \
