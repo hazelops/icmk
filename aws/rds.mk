@@ -16,3 +16,8 @@ CMD_RDS_DB_CLUSTER_FAILOVER = WAIT_TIME=0; SUCCESS_FLAG=0; printf "%s" "Getting 
 
 # Notification before main logic invocation
 CMD_RDS_DB_CLUSTER_FAILOVER_RUN = @ echo "\nFailover process within '$(RDS_DB_CLUSTER_IDENTIFIER)' RDS cluster has been started. \nThe Primary DB instance was '$(CMD_RDS_DB_CLUSTER_WR_INSTANCE_IDENTIFIER_PREVIOUS)'.\n" && $(CMD_RDS_DB_CLUSTER_FAILOVER)
+
+# RDS DB Writer instance reboot
+CMD_RDS_DB_CLUSTER_WR_INSTANCE_START_REBOOT = $$($(AWS) rds reboot-db-instance --db-instance-identifier $(CMD_RDS_DB_CLUSTER_WR_INSTANCE_IDENTIFIER))
+# RDS DB wait instance available
+CMD_RDS_DB_CLUSTER_WR_INSTANCE_AVAILABLE = $$($(AWS) rds wait db-instance-available --db-instance-identifier $(CMD_RDS_DB_CLUSTER_WR_INSTANCE_IDENTIFIER))
