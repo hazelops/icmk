@@ -9,9 +9,10 @@ ECS_TASK_NAME ?= $(ENV)-$(SVC)
 DOCKER_REGISTRY ?= $(AWS_ACCOUNT).dkr.ecr.$(AWS_REGION).amazonaws.com
 DOCKER_IMAGE_NAME ?= $(NAMESPACE)-$(SVC)
 ENABLE_INLINE_CACHE ?= $(ENABLE_BUILDKIT)
+ECS_DEPLOY_TIMEOUT ?= 600
 
-ECS_SERVICE_TASK_NETWORK_CONFIG = $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
-ECS_SERVICE_TASK_LAUNCH_TYPE = $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
+ECS_SERVICE_TASK_NETWORK_CONFIG ?= $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_network_configuration.value')
+ECS_SERVICE_TASK_LAUNCH_TYPE ?= $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -rc '.$(shell echo $(SVC) | sed 's/-/_/g')_task_launch_type.value')
 SSM_OUTPUT_JSON = $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d)
 
 # This is required due to a bug in Docker Multistage + Cache configuration.
@@ -23,7 +24,7 @@ ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs describe-task-definition --
 ECS_SERVICE_RUNNING_TASK_ID = $(eval ECS_SERVICE_RUNNING_TASK_ID := $(shell $(AWS) ecs list-tasks --cluster $(ECS_CLUSTER_NAME) --service-name $(ECS_SERVICE_NAME) --desired-status "RUNNING" | $(JQ) -r '.taskArns[]' | $(CUT) -d'/' -f3))$(ECS_SERVICE_RUNNING_TASK_ID)
 CMD_SSM_TO_FARGATE_TASK ?= aws --profile $(AWS_PROFILE) ecs execute-command --cluster $(ECS_CLUSTER_NAME) --task $(ECS_SERVICE_RUNNING_TASK_ID) --container $(SVC) --command "/bin/sh" --interactive
 
-CMD_ECS_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_SERVICE_TASK_DEFINITION_ARN) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --timeout 480 --rollback -e $(SVC) DD_VERSION $(TAG)
+CMD_ECS_SERVICE_DEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_SERVICE_TASK_DEFINITION_ARN) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --timeout $(ECS_DEPLOY_TIMEOUT) --rollback -e $(SVC) DD_VERSION $(TAG)
 CMD_ECS_SERVICE_REDEPLOY = @$(ECS) deploy --profile $(AWS_PROFILE) --region $(AWS_REGION)  $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --diff --rollback
 CMD_ECS_SERVICE_DOCKER_BUILD = DOCKER_BUILDKIT=$(ENABLE_BUILDKIT) $(DOCKER) build \
 	. \
