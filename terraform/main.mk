@@ -16,6 +16,7 @@ Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfp
 # Terraform Backend Config
 TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
 TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
+TERRAFORM_STATE_REGION = $(AWS_REGION)
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --rm -v $(ENV_DIR):/data -t wata727/tflint
