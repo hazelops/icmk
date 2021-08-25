@@ -76,7 +76,7 @@ waypoint.config:
 	$(CMD_WAYPOINT_CONFIG_SET)
 
 waypoint.init: gomplate waypoint-dependency
-	$(CMD_WAYPOINT_CONTEXT_CLEARн)
+	$(CMD_WAYPOINT_CONTEXT_CLEAR)
 	$(CMD_WAYPOINT_INIT)
 	$(CMD_WAYPOINT_CONFIG_SET)
 
