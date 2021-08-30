@@ -38,6 +38,10 @@ AWS ?= $(shell echo $$(if [ "$(LINUX_ARCH)" = "arm64" ]; then echo "$(AWS_ARM)";
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail $(SERVICE_NAME) --follow --format "short"
 CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
 
+# VPC settings
+VPC_PUBLIC_SUBNETS ?= $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -r '.vpc_public_subnets.value')
+VPC_PRIVATE_SUBNETS ?= $(shell $(AWS) ssm get-parameter --name "/$(ENV)/terraform-output" --with-decryption | $(JQ) -r '.Parameter.Value' | $(BASE64) -d | $(JQ) -r '.vpc_private_subnets.value')
+
 # Getting OS|Linux info
 OS_NAME ?= $(shell uname -s)
 LINUX_OS_DISTRIB ?= $$(cat /etc/issue)
