@@ -1,14 +1,36 @@
 # Docker executors
 ########################################################################################################################
-SLS ?= $(DOCKER) run --rm --workdir=/opt/app -e AWS_PROFILE=$(AWS_PROFILE) -e LOCALSTACK_HOST=$(LOCALSTACK_HOST) -v $(ROOT_DIR)/$(PROJECT_PATH):/opt/app -v ~/.aws/:/root/.aws:ro $(SLS_DOCKER_IMAGE):$(SLS_VERSION) serverless
-NPM ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --rm --workdir=$(ROOT_DIR)/$(PROJECT_PATH) -v $(ROOT_DIR):$(ROOT_DIR) node:$(NODE_VERSION) npm
+SLS = @$(DOCKER) run --rm \
+	--user root:root \
+	--workdir=/app \
+	--entrypoint="/usr/local/bin/npx" \
+	-e AWS_PROFILE=$(AWS_PROFILE) \
+	-e LOCALSTACK_HOST=$(LOCALSTACK_HOST) \
+	-e SLS_DEBUG='$(SLS_DEBUG)' \
+	-e SLS_DEPRECATION_DISABLE='$(SLS_DEPRECATION_DISABLE)' \
+	-e SLS_WARNING_DISABLE='$(SLS_WARNING_DISABLE)' \
+	-v ~/.aws/:/root/.aws:ro \
+	-v $(ROOT_DIR)/$(PROJECT_PATH):/app \
+	-v $(ROOT_DIR)/$(PROJECT_PATH)/.serverless/:/root/.serverless \
+	-v $(ROOT_DIR)/.npm/:/root/.npm \
+	-v $(SVC)-node-modules:/app/node_modules \
+	node:$(NODE_VERSION) serverless \
+
+NPM ?= @$(DOCKER) run --rm \
+	--user root:root \
+	--workdir=/app \
+	-v $(ROOT_DIR)/$(PROJECT_PATH):/app \
+	-v $(ROOT_DIR)/$(PROJECT_PATH)/.config/:/root/.config \
+	-v $(ROOT_DIR)/.npm/:/root/.npm \
+	-v $(SVC)-node-modules:/app/node_modules \
+	node:$(NODE_VERSION) npm
 
 # Serverless CLI Reference
 ########################################################################################################################
 CMD_SLS_SERVICE_INSTALL = $(NPM) install --save-dev
 CMD_SLS_SERVICE_DEPLOY = $(SLS) deploy --config $(SLS_FILE) --service $(SVC) --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
 CMD_SLS_SERVICE_INVOKE = $(SLS) invoke --function $(SVC) --path $(EVENT_FILE) --log --config $(SLS_FILE) --service $(SVC) --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
-CMD_SLS_SERVICE_DESTROY = $(SLS) remove --config $(SLS_FILE) --service $(SVC) --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE)
+CMD_SLS_SERVICE_DESTROY = $(SLS) remove --config $(SLS_FILE) --service $(SVC) --verbose --region $(AWS_REGION) --env $(ENV) --profile $(AWS_PROFILE) || true
 CMD_SLS_SERVICE_BUILD = cd $(ROOT_DIR)/$(PROJECT_PATH) && make
 CMD_SLS_SERVICE_SECRETS_PUSH = $(CMD_SERVICE_SECRETS_PUSH)
 CMD_SLS_SERVICE_SECRETS_PULL = $(CMD_SERVICE_SECRETS_PULL)
