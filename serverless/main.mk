@@ -14,7 +14,7 @@ SLS = @$(DOCKER) run --rm \
 	-v $(ROOT_DIR)/$(PROJECT_PATH)/.serverless/:/root/.serverless \
 	-v $(ROOT_DIR)/.npm/:/root/.npm \
 	-v $(SVC)-node-modules:/app/node_modules \
-	node:$(NODE_VERSION) serverless \
+	node:$(NODE_VERSION) serverless
 
 NPM ?= @$(DOCKER) run --rm \
 	--user root:root \
