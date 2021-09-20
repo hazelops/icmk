@@ -13,7 +13,7 @@ SLS = @$(DOCKER) run --rm \
 	-v $(ROOT_DIR)/$(PROJECT_PATH):/app \
 	-v $(ROOT_DIR)/$(PROJECT_PATH)/.serverless/:/root/.serverless \
 	-v $(ROOT_DIR)/.npm/:/root/.npm \
-	-v $(SVC)-node-modules:/app/node_modules \
+	-v $(SLS_NODE_MODULES_CACHE_MOUNT):/app/node_modules \
 	node:$(NODE_VERSION) serverless
 
 NPM ?= @$(DOCKER) run --rm \
@@ -22,7 +22,7 @@ NPM ?= @$(DOCKER) run --rm \
 	-v $(ROOT_DIR)/$(PROJECT_PATH):/app \
 	-v $(ROOT_DIR)/$(PROJECT_PATH)/.config/:/root/.config \
 	-v $(ROOT_DIR)/.npm/:/root/.npm \
-	-v $(SVC)-node-modules:/app/node_modules \
+	-v $(SLS_NODE_MODULES_CACHE_MOUNT):/app/node_modules \
 	node:$(NODE_VERSION) npm
 
 # Serverless CLI Reference

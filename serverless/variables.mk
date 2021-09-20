@@ -7,5 +7,6 @@ SLS_FILE ?= serverless.yml
 SLS_DEBUG ?=
 SLS_DEPRECATION_DISABLE ?=
 SLS_WARNING_DISABLE ?=
+SLS_NODE_MODULES_CACHE_MOUNT ?= $(SVC)-node-modules
 EVENT_FILE ?= event.json
 NODE_VERSION ?= 12-alpine3.10
