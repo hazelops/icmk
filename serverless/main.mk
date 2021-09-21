@@ -1,6 +1,6 @@
 # Docker executors
 ########################################################################################################################
-SLS = @$(DOCKER) run --rm \
+SLS ?= @$(DOCKER) run --rm \
 	--user root:root \
 	--workdir=/app \
 	--entrypoint="/usr/local/bin/npx" \
