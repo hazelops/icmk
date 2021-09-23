@@ -27,9 +27,9 @@ MFA_AWS_EXPIRATION ?= $(shell echo $(MFA_GET_SESSION_TOKEN) | $(JQ) .Expiration 
 MFA_AWS_ACCESS_KEY_VALUE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then cat ~/.aws/mfa_aws_access_key; else echo ""; fi)) #$$(cat ~/.aws/mfa_aws_access_key)
 MFA_AWS_SECRET_ACCESS_KEY_VALUE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then cat ~/.aws/mfa_aws_secret_access_key; else echo ""; fi)) #$$(cat ~/.aws/mfa_aws_secret_access_key)
 MFA_AWS_SESSION_TOKEN_VALUE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then cat ~/.aws/mfa_aws_session_token; else echo ""; fi)) #$$(cat ~/.aws/mfa_aws_session_token)
-export AWS_ACCESS_KEY_ID=$(shell echo $(MFA_AWS_ACCESS_KEY_VALUE))
-export AWS_SECRET_ACCESS_KEY=$(shell echo $(MFA_AWS_SECRET_ACCESS_KEY_VALUE))
-export AWS_SESSION_TOKEN=$(shell echo $(MFA_AWS_SESSION_TOKEN_VALUE))
+export AWS_ACCESS_KEY_ID=$(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo $(MFA_AWS_ACCESS_KEY_VALUE); else echo $(AWS_ACCESS_KEY_ID); fi))
+export AWS_SECRET_ACCESS_KEY=$(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo $(MFA_AWS_SECRET_ACCESS_KEY_VALUE); else echo $(AWS_SECRET_ACCESS_KEY); fi))
+export AWS_SESSION_TOKEN=$(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo $(MFA_AWS_SESSION_TOKEN_VALUE); else echo $(AWS_SESSION_TOKEN); fi))
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
 AWS_ARM ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo "$(AWS_ARM_WITH_MFA)"; else echo "$(AWS_ARM_NO_MFA)"; fi))
