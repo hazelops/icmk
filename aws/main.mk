@@ -9,6 +9,7 @@ endif
 # We don't check for AWS_PROFILE, but instead we assume the profile name.
 # You can override it, although it's recommended to have a profile per environment in your ~/.aws/credentials
 AWS_PROFILE ?= $(NAMESPACE)-$(ENV)
+AWS_CLI_PROFILE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo ""; else echo "--profile $(AWS_PROFILE)"; fi))
 AWS_USER ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) iam get-user | $(JQ) -r ".User.UserName")
 AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) sts get-caller-identity | $(JQ) -r '.Account' || echo "nil" )
 
@@ -23,9 +24,12 @@ MFA_AWS_SECRET_ACCESS_KEY ?= $(shell echo $(MFA_GET_SESSION_TOKEN) | $(JQ) .Secr
 MFA_AWS_SESSION_TOKEN ?= $(shell echo $(MFA_GET_SESSION_TOKEN) | $(JQ) .SessionToken | xargs > ~/.aws/mfa_aws_session_token)
 MFA_AWS_EXPIRATION ?= $(shell echo $(MFA_GET_SESSION_TOKEN) | $(JQ) .Expiration | xargs)
 
-MFA_AWS_ACCESS_KEY_VALUE ?= $$(cat ~/.aws/mfa_aws_access_key)
-MFA_AWS_SECRET_ACCESS_KEY_VALUE ?= $$(cat ~/.aws/mfa_aws_secret_access_key)
-MFA_AWS_SESSION_TOKEN_VALUE ?= $$(cat ~/.aws/mfa_aws_session_token)
+MFA_AWS_ACCESS_KEY_VALUE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then cat ~/.aws/mfa_aws_access_key; else echo ""; fi)) #$$(cat ~/.aws/mfa_aws_access_key)
+MFA_AWS_SECRET_ACCESS_KEY_VALUE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then cat ~/.aws/mfa_aws_secret_access_key; else echo ""; fi)) #$$(cat ~/.aws/mfa_aws_secret_access_key)
+MFA_AWS_SESSION_TOKEN_VALUE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then cat ~/.aws/mfa_aws_session_token; else echo ""; fi)) #$$(cat ~/.aws/mfa_aws_session_token)
+export AWS_ACCESS_KEY_ID=$(shell echo $(MFA_AWS_ACCESS_KEY_VALUE))
+export AWS_SECRET_ACCESS_KEY=$(shell echo $(MFA_AWS_SECRET_ACCESS_KEY_VALUE))
+export AWS_SESSION_TOKEN=$(shell echo $(MFA_AWS_SESSION_TOKEN_VALUE))
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
 AWS_ARM ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo "$(AWS_ARM_WITH_MFA)"; else echo "$(AWS_ARM_NO_MFA)"; fi))
@@ -112,7 +116,7 @@ CMD_SSM_CLEANUP ?= $(shell echo $$(if [ "$(OS_NAME)" = "Linux" ]; then echo "$(S
 # SSM access to Fargate ECS
 SSM_MI_TARGET ?= $(shell $(AWS) ssm describe-instance-information | $(JQ) -er '.InstanceInformationList[] | select(.Name == "$(SVC)" and .PingStatus == "Online") | .InstanceId' > tmp && cat tmp | head -1 && rm -rf tmp || rm -rf tmp)
 # We use local aws-cli here due to interactive actions 
-SSM_TO_FARGATE ?= aws --profile $(AWS_PROFILE) ssm start-session --target $(SSM_MI_TARGET)
+SSM_TO_FARGATE ?= aws $(AWS_CLI_PROFILE) ssm start-session --target $(SSM_MI_TARGET)
 CMD_SSM_TO_FARGATE ?= $(shell echo $$(if [ -z "$(SSM_MI_TARGET)" ]; then echo "echo '[ERROR] SSM mi target is not available now (please try in a minute) or not configured. Exit.'"; else echo "$(SSM_TO_FARGATE)"; fi))
 # Tasks
 ########################################################################################################################
