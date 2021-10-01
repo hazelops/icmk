@@ -21,9 +21,9 @@ AWS_ACCOUNT ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) sts get-caller-identi
 AWS_DEV_ENV_NAME ?= $(shell [ -f ~/.aws/credentials ] && $(AWS) iam list-user-tags --user-name $(AWS_USER) | ( $(JQ) -e -r '.Tags[] | select(.Key == "devEnvironmentName").Value') || echo "$(ENV) (User env is not configured)")
 
 # AWS MFA
-MFA_DEVICE_ARN ?= 
-MFA_TOKEN_CODE ?= $(eval MFA_TOKEN_CODE := $(shell bash -c 'read -p "Enter MFA token: " token; echo $$token'))$(MFA_TOKEN_CODE)
-MFA_GET_SESSION_TOKEN ?= $(eval MFA_GET_SESSION_TOKEN := $(shell echo $$(aws sts get-session-token --serial-number ${MFA_DEVICE_ARN} --token-code $(MFA_TOKEN_CODE) | $(JQ) 'map_values(tostring)' | $(JQ) .Credentials)))$(MFA_GET_SESSION_TOKEN)
+AWS_MFA_DEVICE_ARN ?= $(MFA_DEVICE_ARN) # Since some users have already used MFA_DEVICE_ARN
+AWS_MFA_TOKEN_CODE ?= $(eval AWS_MFA_TOKEN_CODE := $(shell bash -c 'read -p "Enter MFA token: " token; echo $$token'))$(AWS_MFA_TOKEN_CODE)
+MFA_GET_SESSION_TOKEN ?= $(eval MFA_GET_SESSION_TOKEN := $(shell echo $$(aws sts get-session-token --serial-number ${AWS_MFA_DEVICE_ARN} --token-code $(AWS_MFA_TOKEN_CODE) | $(JQ) 'map_values(tostring)' | $(JQ) .Credentials)))$(MFA_GET_SESSION_TOKEN)
 MFA_AWS_ACCESS_KEY_ID ?= $(shell echo $(MFA_GET_SESSION_TOKEN) | $(JQ) .AccessKeyId | xargs > ~/.aws/mfa_aws_access_key)
 MFA_AWS_SECRET_ACCESS_KEY ?= $(shell echo $(MFA_GET_SESSION_TOKEN) | $(JQ) .SecretAccessKey | xargs > ~/.aws/mfa_aws_secret_access_key)
 MFA_AWS_SESSION_TOKEN ?= $(shell echo $(MFA_GET_SESSION_TOKEN) | $(JQ) .SessionToken | xargs > ~/.aws/mfa_aws_session_token)
