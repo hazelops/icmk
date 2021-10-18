@@ -63,7 +63,7 @@ CMD_ECS_SERVICE_LOCAL_DOWN = $(ECS_CLI) local down --task-def-remote $(ECS_SERVI
 
 CMD_ECS_SERVICE_DOCKER_RUN = $(DOCKER) run $(DOCKER_RUN_ADDITIONAL_PARAMS) --rm $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG)
 
-ECS ?= $(DOCKER) run -i --rm -v $(HOME)/.aws/:/root/.aws hazelops/ecs-deploy:$(ECS_DEPLOY_VERSION) ecs
+ECS ?= $(DOCKER) run -i --rm -v $(HOME)/.aws/:/root/.aws hazelops/ecs-deploy@$(ECS_DEPLOY_IMAGE_SHA) ecs
 ECS_CLI ?= $(DOCKER) run \
 	-i --rm -v /var/run/docker.sock:/var/run/docker.sock \
 	-v $(HOME)/.aws/:/root/.aws \
