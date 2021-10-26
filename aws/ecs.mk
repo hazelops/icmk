@@ -21,7 +21,7 @@ ECS_SERVICE_DOCKER_BUILD_CACHE_PARAMETER ?= $(shell [ "$(ENABLE_BUILDKIT)" = "1"
 ECS_SERVICE_TASK_ID = $(eval ECS_SERVICE_TASK_ID := $(shell $(AWS) ecs run-task --cluster $(ECS_CLUSTER_NAME) --task-definition "$(ECS_SERVICE_TASK_DEFINITION_ARN)" --network-configuration '$(ECS_SERVICE_TASK_NETWORK_CONFIG)' --launch-type "$(ECS_SERVICE_TASK_LAUNCH_TYPE)" | $(JQ) -r '.tasks[].taskArn' | $(REV) | $(CUT) -d'/' -f1 | $(REV)))$(ECS_SERVICE_TASK_ID)
 ECS_SERVICE_TASK_DEFINITION_ARN = $(shell $(AWS) ecs describe-task-definition --task-definition $(ECS_TASK_NAME) | $(JQ) -r '.taskDefinition.taskDefinitionArn')
 
-ECS_SERVICE_RUNNING_TASK_ID = $(eval ECS_SERVICE_RUNNING_TASK_ID := $(shell $(AWS) ecs list-tasks --cluster $(ECS_CLUSTER_NAME) --service-name $(ECS_SERVICE_NAME) --desired-status "RUNNING" | $(JQ) -r '.taskArns[]' | $(CUT) -d'/' -f3))$(ECS_SERVICE_RUNNING_TASK_ID)
+ECS_SERVICE_RUNNING_TASK_ID = $(eval ECS_SERVICE_RUNNING_TASK_ID := $(shell $(AWS) ecs list-tasks --cluster $(ECS_CLUSTER_NAME) --service-name $(ECS_SERVICE_NAME) --desired-status "RUNNING" | $(JQ) -r '.taskArns[]' | $(CUT) -d'/' -f3 | head -n 1))$(ECS_SERVICE_RUNNING_TASK_ID)
 CMD_SSM_TO_FARGATE_TASK ?= aws ecs $(AWS_CLI_PROFILE) execute-command --cluster $(ECS_CLUSTER_NAME) --task $(ECS_SERVICE_RUNNING_TASK_ID) --container $(SVC) --command "/bin/sh" --interactive
 
 CMD_ECS_SERVICE_DEPLOY = @$(ECS) deploy $(AWS_CLI_PROFILE) $(ECS_CLUSTER_NAME) $(ECS_SERVICE_NAME) --task $(ECS_SERVICE_TASK_DEFINITION_ARN) --image $(SVC) $(DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME):$(TAG) --diff --timeout $(ECS_DEPLOY_TIMEOUT) --rollback -e $(SVC) DD_VERSION $(TAG)
