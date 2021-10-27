@@ -10,7 +10,14 @@ CMD_INSTALL_IZE = chmod +x $(TMPDIR)/ize && mv $(TMPDIR)/ize /usr/local/bin/ize
 
 # Tasks
 ########################################################################################################################
-ize.download:
-	@$(CMD_DOWNLOAD_IZE)
 ize.install:
-	@$(CMD_INSTALL_IZE)
+	@$(CMD_DOWNLOAD_IZE) && \
+	$(CMD_INSTALL_IZE) && \
+	@echo "\n\033[32m[OK]\033[0m IZE installation successful."
+
+ize.check:
+ifeq (, $(shell which ize))
+	@echo "\033[31m[FAILED]\033[0m IZE is not installed or incorrectly configured.\n You can download IZE \033[34mhttps://github.com/hazelops/ize/releases\033[0m \n and install it manually."
+else
+	@echo "\n\033[32m[OK]\033[0m IZE is installed."
+endif
