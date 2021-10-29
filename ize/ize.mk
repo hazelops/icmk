@@ -7,6 +7,8 @@ CMD_INSTALL_IZE =  chmod +x $(IZE_DIR)/ize
 # Tasks
 ########################################################################################################################
 ize.install:
-	@$(CMD_DOWNLOAD_IZE) && \
+	@ echo "\n\033[33m[...]\033[0m IZE downloading" && \
+	$(CMD_DOWNLOAD_IZE) && \
+	echo "\n\033[32m[OK]\033[0m IZE downloaded successfully" && \
 	$(CMD_INSTALL_IZE) && \
-	@echo "\n\033[32m[OK]\033[0m IZE successfully installed"
+	echo "\n\033[32m[OK]\033[0m IZE successfully installed"
