@@ -164,3 +164,19 @@ jobs:
 
       - name: Show AWS Debug Info
         run: make aws.debug
+
+  install-ize:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11.0]
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Install IZE
+        run: make ize.install
