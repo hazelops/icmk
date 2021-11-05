@@ -62,5 +62,5 @@ K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) found in PATH. Please install it.")))
 
 # This ensures we include main.mk and variables.mk only if it's there. If not we don't error out (IE in case of bootstrap)
--include $(INFRA_DIR)/icmk/main.mk
 -include $(INFRA_DIR)/icmk/variables.mk
+-include $(INFRA_DIR)/icmk/main.mk
