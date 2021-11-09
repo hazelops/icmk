@@ -28,51 +28,56 @@ CMD_WAYPOINT_SERVICE_BUILD ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
-		echo '$(VPC_PUBLIC_SUBNETS)' && \
 		$(WAYPOINT_INTERPOLATE_VARS) && \
-		cat waypoint.wpvars && \
     	$(WAYPOINT) build -var-file=waypoint.wpvars -app $(SVC)
 
 CMD_WAYPOINT_SERVICE_DEPLOY ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	$(WAYPOINT) deploy -var-file=waypoint.wpvars -release=false -app $(SVC)
 
 CMD_WAYPOINT_SERVICE_RELEASE ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	$(WAYPOINT) release -app $(SVC)
 
 CMD_WAYPOINT_INIT ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	$(WAYPOINT) init
 
 CMD_WAYPOINT_INSTALL ?= \
 	@\
      	cd $(ENV_DIR) && \
 		cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	$(WAYPOINT) install -accept-tos -platform=ecs -ecs-cluster=$(WAYPOINT_ECS_CLUSTER_NAME) -ecs-region=$(AWS_REGION) -runner=$(WAYPOINT_RUNNER_ENABLED) -ecs-server-image=$(WAYPOINT_DOCKER_IMAGE):$(WAYPOINT_VERSION)
 
 CMD_WAYPOINT_UNINSTALL ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	$(WAYPOINT) server uninstall -platform=ecs -ecs-cluster=$(WAYPOINT_ECS_CLUSTER_NAME) -ecs-region=$(AWS_REGION) -auto-approve -ignore-runner-error
 
 CMD_WAYPOINT_DESTROY ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	$(WAYPOINT) destroy -auto-approve
 
 CMD_WAYPOINT_AUTH ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	$(WAYPOINT) token new
 
 
