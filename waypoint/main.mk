@@ -29,6 +29,7 @@ CMD_WAYPOINT_SERVICE_BUILD ?= \
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
 		$(WAYPOINT_INTERPOLATE_VARS) && \
+		cat waypoint.wpvars && \
     	$(WAYPOINT) build -var-file=waypoint.wpvars -app $(SVC)
 
 CMD_WAYPOINT_SERVICE_DEPLOY ?= \
