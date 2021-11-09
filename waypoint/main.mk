@@ -19,9 +19,15 @@ WAYPOINT ?= $(DOCKER) run \
 	-e ENV="$(ENV)" \
 	$(WAYPOINT_DOCKER_IMAGE):$(WAYPOINT_VERSION)
 
+WAYPOINT_INTERPOLATE_VARS ?= \
+	sed -i 's/{{ .Env.VPC_PRIVATE_SUBNETS }}/$(VPC_PRIVATE_SUBNETS)/g' $(ICMK_TEMPLATE_WAYPOINT_VARS) && \
+	sed -i 's/{{ .Env.VPC_PUBLIC_SUBNETS }}/$(VPC_PUBLIC_SUBNETS)/g' $(ICMK_TEMPLATE_WAYPOINT_VARS) && \
+	sed -i 's/{{ .Env.ZONE_ID }}/$(ZONE_ID)/g' $(ICMK_TEMPLATE_WAYPOINT_VARS)
+
 CMD_WAYPOINT_SERVICE_BUILD ?= \
 	@\
      	cd $(ENV_DIR) && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
     	$(WAYPOINT) build -var-file=waypoint.wpvars -app $(SVC)
 
