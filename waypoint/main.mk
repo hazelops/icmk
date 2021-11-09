@@ -19,10 +19,18 @@ WAYPOINT ?= $(DOCKER) run \
 	-e ENV="$(ENV)" \
 	$(WAYPOINT_DOCKER_IMAGE):$(WAYPOINT_VERSION)
 
+WAYPOINT_INTERPOLATE_VARS ?= \
+	sed -i 's/vpc_private_subnets=\[\]/vpc_private_subnets=$(VPC_PRIVATE_SUBNETS)/g' $(ENV_DIR)/waypoint.wpvars && \
+	sed -i 's/vpc_public_subnets=\[\]/vpc_public_subnets=$(VPC_PUBLIC_SUBNETS)/g' $(ENV_DIR)/waypoint.wpvars && \
+	sed -i 's/AWS_ZONE_ID/"$(ZONE_ID)"/g' $(ENV_DIR)/waypoint.wpvars
+
 CMD_WAYPOINT_SERVICE_BUILD ?= \
 	@\
      	cd $(ENV_DIR) && \
     	cat $(ICMK_TEMPLATE_WAYPOINT_VARS) | $(GOMPLATE) > waypoint.wpvars && \
+		echo '$(VPC_PUBLIC_SUBNETS)' && \
+		$(WAYPOINT_INTERPOLATE_VARS) && \
+		cat waypoint.wpvars && \
     	$(WAYPOINT) build -var-file=waypoint.wpvars -app $(SVC)
 
 CMD_WAYPOINT_SERVICE_DEPLOY ?= \
