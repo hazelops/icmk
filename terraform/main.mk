@@ -23,9 +23,6 @@ TFLINT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --rm
 TFLOCK ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hazelops/tflock
 TF_LOG_PATH ?= /$(ENV_DIR)/tflog.txt
 
-#AWS_MFA_ENV_VARS ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo "$(TERRAFORM_WITH_MFA)"; else echo "$(TERRAFORM_NO_MFA)"; fi))
-#AWS_MFA_ENV_VARS ?= $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo "-e AWS_ACCESS_KEY_ID="$(MFA_AWS_ACCESS_KEY_VALUE)" -e AWS_SECRET_ACCESS_KEY="$(MFA_AWS_SECRET_ACCESS_KEY_VALUE)" -e AWS_SESSION_TOKEN="$(MFA_AWS_SESSION_TOKEN_VALUE)""; else echo ""; fi)
-
 TERRAFORM ?= $(DOCKER) run \
 	--user "$(CURRENT_USER_ID)":"$(CURRENT_USERGROUP_ID)" \
 	--rm \
