@@ -35,52 +35,18 @@ MFA_AWS_SESSION_TOKEN_VALUE ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true
 
 
 # $(AWS_ARGS) definition see in .infra/icmk/aws/localstack.mk
-AWS_ARM ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo "$(AWS_ARM_WITH_MFA)"; else echo "$(AWS_ARM_NO_MFA)"; fi))
-AWS_ARM_WITH_MFA ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --platform "linux/amd64" \
+AWS_MFA_ENV_VARS ?= $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo "-e AWS_ACCESS_KEY_ID="$(MFA_AWS_ACCESS_KEY_VALUE)" -e AWS_SECRET_ACCESS_KEY="$(MFA_AWS_SECRET_ACCESS_KEY_VALUE)" -e AWS_SESSION_TOKEN="$(MFA_AWS_SESSION_TOKEN_VALUE)""; else echo ""; fi)
+DOCKER_PLATFORM  ?= $$(if [ "$(LINUX_ARCH)" = "arm64" ]; then echo "--platform "linux/amd64""; else echo ""; fi)
+
+AWS ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" $(DOCKER_PLATFORM) \
 	-v $(HOME)/.aws/:/.aws \
 	-i \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \
-	-e AWS_REGION="$(AWS_REGION)" \
-	-e AWS_ACCESS_KEY_ID="$(MFA_AWS_ACCESS_KEY_VALUE)" \
-	-e AWS_SECRET_ACCESS_KEY="$(MFA_AWS_SECRET_ACCESS_KEY_VALUE)" \
-	-e AWS_SESSION_TOKEN="$(MFA_AWS_SESSION_TOKEN_VALUE)" \
+	-e AWS_REGION="$(AWS_REGION)" $(AWS_MFA_ENV_VARS) \
 	-e AWS_CONFIG_FILE="/.aws/config" \
 	-e AWS_SHARED_CREDENTIALS_FILE="/.aws/credentials" \
 	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
 
-AWS_ARM_NO_MFA ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --platform "linux/amd64" \
-	-v $(HOME)/.aws/:/.aws \
-	-i \
-	-e AWS_PROFILE="$(AWS_PROFILE)" \
-	-e AWS_REGION="$(AWS_REGION)" \
-	-e AWS_CONFIG_FILE="/.aws/config" \
-	-e AWS_SHARED_CREDENTIALS_FILE="/.aws/credentials" \
-	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
-
-
-AWS_DEFAULT ?= $(shell echo $$(if [ "$(AWS_MFA_ENABLED)" = "true" ]; then echo "$(AWS_DEFAULT_WITH_MFA)"; else echo "$(AWS_DEFAULT_NO_MFA)"; fi))
-AWS_DEFAULT_WITH_MFA ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
-	-v $(HOME)/.aws/:/.aws \
-	-i \
-	-e AWS_PROFILE="$(AWS_PROFILE)" \
-	-e AWS_REGION="$(AWS_REGION)" \
-	-e AWS_ACCESS_KEY_ID="$(MFA_AWS_ACCESS_KEY_VALUE)" \
-	-e AWS_SECRET_ACCESS_KEY="$(MFA_AWS_SECRET_ACCESS_KEY_VALUE)" \
-	-e AWS_SESSION_TOKEN="$(MFA_AWS_SESSION_TOKEN_VALUE)" \
-	-e AWS_CONFIG_FILE="/.aws/config" \
-	-e AWS_SHARED_CREDENTIALS_FILE="/.aws/credentials" \
-	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
-
-AWS_DEFAULT_NO_MFA ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
-	-v $(HOME)/.aws/:/.aws \
-	-i \
-	-e AWS_PROFILE="$(AWS_PROFILE)" \
-	-e AWS_REGION="$(AWS_REGION)" \
-	-e AWS_CONFIG_FILE="/.aws/config" \
-	-e AWS_SHARED_CREDENTIALS_FILE="/.aws/credentials" \
-	amazon/aws-cli:$(AWS_CLI_VERSION) $(AWS_ARGS)
-
-AWS ?= $(shell echo $$(if [ "$(LINUX_ARCH)" = "arm64" ]; then echo "$(AWS_ARM)"; else echo "$(AWS_DEFAULT)"; fi))
 
 CMD_AWS_LOGS_TAIL = @$(AWS) logs tail $(SERVICE_NAME) --follow --format "short"
 CMD_AWS_EC2_IMPORT_KEY_PAIR = @$(AWS) ec2 import-key-pair  --key-name="$(EC2_KEY_PAIR_NAME)" --public-key-material="$(SSH_PUBLIC_KEY_BASE64)"
