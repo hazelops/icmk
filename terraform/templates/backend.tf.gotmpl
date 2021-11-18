@@ -42,7 +42,6 @@ provider "aws" {
 provider "aws" {
   profile = var.aws_profile
   region  = var.aws_region
-  version = "{{ .Env.TERRAFORM_AWS_PROVIDER_VERSION }}"
 }
 
 terraform {
