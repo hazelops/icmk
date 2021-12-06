@@ -48,7 +48,7 @@ confirm:
 # Core Dependencies
 GIT  ?= $(shell which git)
 DOCKER ?= $(shell which docker)
-AWS-CLI ?= $(shell which aws)
+AWS_CLI ?= $(shell which aws)
 
 # Ensures that all dependencies are installed
 prereqs: git docker aws-cli ssh-pub-key
@@ -68,7 +68,7 @@ else
 endif
 
 aws-cli:
-ifeq (, $(AWS-CLI))
+ifeq (, $(AWS_CLI))
 	@echo "\033[31mX AWS (CLI) is not installed or incorrectly configured. https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html/ \033[0m"
 else
 	@echo "\033[32m✔ AWS (CLI)\033[0m"
@@ -76,7 +76,7 @@ endif
 
 ssh-pub-key:
 ifeq (,$(wildcard ~/.ssh/id_rsa.pub))
-	@echo "\033[31mX SSH Public Key is not found here: ~/.ssh/id_rsa.pub \033[0m"
+	@echo "\033[31m! SSH Public Key is not found here: ~/.ssh/id_rsa.pub . Please make sure that you have a key and pass it via '$(SSH_PUBLIC_KEY)' variable. \033[0m"
 else
 	@echo "\033[32m✔ SSH Public Key\033[0m"
 endif
