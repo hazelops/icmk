@@ -23,6 +23,12 @@ TFLINT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --rm
 TFLOCK ?= $(DOCKER) run --rm --hostname=$(USER)-icmk-terraform -v $(ENV_DIR):/$(ENV_DIR) -v "$(ENV_DIR)/.terraform":/"$(ENV_DIR)/.terraform" -v "$(INFRA_DIR)":"$(INFRA_DIR)" -v $(HOME)/.aws/:/root/.aws:ro -w $(ENV_DIR) -e AWS_PROFILE=$(AWS_PROFILE) -e ENV=$(ENV) hazelops/tflock
 TF_LOG_PATH ?= /$(ENV_DIR)/tflog.txt
 
+TF_VERSION_MAJOR ?= $$(echo $(TERRAFORM_VERSION) | tr "." "\n" | head -n 1)
+TERRAFORM_VERSION_VERIFICATION ?= $(shell echo $$(if [ "$(TF_VERSION_MAJOR)" -lt "1" ]; then echo "\033[33m[WARNING]\033[0m Your version of Terraform is out of date! The minimally compatible version: 1.0.0"; else echo "Terraform version: $(TERRAFORM_VERSION)"; fi))
+
+terraform.compat:
+	@echo $(TERRAFORM_VERSION_VERIFICATION)
+
 TERRAFORM ?= $(DOCKER) run \
 	--user "$(CURRENT_USER_ID)":"$(CURRENT_USERGROUP_ID)" \
 	--rm \
@@ -49,13 +55,15 @@ infra.destroy: terraform.destroy
 infra.checkov: terraform.checkov
 infra.tflint: terraform.tflint
 
+
+
 terraform.debug:
 	@echo "\033[32m=== Terraform Environment Info ===\033[0m"
 	@echo "\033[36mENV\033[0m: $(ENV)"
 	@echo "\033[36mTF_VAR_ssh_public_key\033[0m: $(TF_VAR_ssh_public_key)"
 
 # TODO: Potentionally replace gomplate by terragrunt
-terraform.init: gomplate terraform
+terraform.init: terraform.compat gomplate terraform
 	@ \
  	cd $(ENV_DIR) && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
