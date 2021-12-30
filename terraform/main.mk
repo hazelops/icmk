@@ -14,9 +14,9 @@ Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfp
 \033[33m To request a service quota increase:\033[0m \033[36m aws service-quotas request-service-quota-increase --service-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].service') --quota-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].quotacode') --desired-value <your_desired_value> \033[0m"; fi )") )
 
 # Terraform Backend Config
-TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
-TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
-TERRAFORM_STATE_REGION = $(AWS_REGION)
+TERRAFORM_STATE_KEY ?= $(ENV)/terraform.tfstate
+TERRAFORM_STATE_PROFILE ?= $(AWS_PROFILE)
+TERRAFORM_STATE_REGION ?= $(AWS_REGION)
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --rm -v $(ENV_DIR):/data -t wata727/tflint
