@@ -41,10 +41,10 @@ ifneq (,$(TIER))
 endif
 
 # Get Service sub-directory name in "projects" folder. We're parsing Make task name and extracting PROJECT_SUB_DIR. So baz/foo.bar will result to PROJECT_SUB_DIR=baz
-PROJECT_SUB_DIR =  $(shell echo $(@) | grep $(SLASHSIGN) > /dev/null && echo $$(echo $(@) | $(CUT) -d/ -f1)$(SLASHSIGN) || echo "")
-PROJECT_ROOT = projects/$(PROJECT_SUB_DIR)
-PROJECT_PATH_ABS=$(shell cd $(PROJECT_ROOT)$(SVC) && pwd -P)
-PROJECT_PATH = $(PROJECT_ROOT)$(shell basename $(PROJECT_PATH_ABS))
+PROJECT_SUB_DIR ?=  $(shell echo $(@) | grep $(SLASHSIGN) > /dev/null && echo $$(echo $(@) | $(CUT) -d/ -f1)$(SLASHSIGN) || echo "")
+PROJECT_ROOT ?= projects/$(PROJECT_SUB_DIR)
+PROJECT_PATH_ABS ?= $(shell cd $(PROJECT_ROOT)$(SVC) && pwd -P)
+PROJECT_PATH ?= $(PROJECT_ROOT)$(shell basename $(PROJECT_PATH_ABS))
 SERVICE_NAME ?= $(ENV)-$(SVC)
 # Tasks
 ########################################################################################################################

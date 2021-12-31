@@ -14,9 +14,9 @@ Current value:$(shell grep -c "+ resource \"$(item)\"" $(ENV_DIR)/.terraform/tfp
 \033[33m To request a service quota increase:\033[0m \033[36m aws service-quotas request-service-quota-increase --service-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].service') --quota-code $(shell echo $(AWS_LIMITS_LIST) | $(JQ) -r '.$(item)[].quotacode') --desired-value <your_desired_value> \033[0m"; fi )") )
 
 # Terraform Backend Config
-TERRAFORM_STATE_KEY = $(ENV)/terraform.tfstate
-TERRAFORM_STATE_PROFILE = $(AWS_PROFILE)
-TERRAFORM_STATE_REGION = $(AWS_REGION)
+TERRAFORM_STATE_KEY ?= $(ENV)/terraform.tfstate
+TERRAFORM_STATE_PROFILE ?= $(AWS_PROFILE)
+TERRAFORM_STATE_REGION ?= $(AWS_REGION)
 TERRAFORM_STATE_BUCKET_NAME ?= $(NAMESPACE)-tf-state
 CHECKOV ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" -v $(ENV_DIR):/tf -i bridgecrew/checkov -d /tf -s
 TFLINT ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" --rm -v $(ENV_DIR):/data -t wata727/tflint
@@ -47,6 +47,22 @@ CMD_SAVE_OUTPUT_TO_SSM = $(AWS) ssm put-parameter --name "/$(ENV)/terraform-outp
 
 # Optional cmd to be used, because the branch related to TF v0.13 upgrade already have updated versions.tf files
 CMD_TERRAFORM_MODULES_UPGRADE = $(shell find $(INFRA_DIR)/terraform -name '*.tf' | xargs -n1 dirname | uniq | xargs -n1 $(TERRAFORM) 0.13upgrade -yes)
+
+CMD_TERRAFORM_INIT ?= @ cd $(ENV_DIR) && \
+	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
+	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
+	$(TERRAFORM) init -input=true
+
+CMD_TERRAFORM_PLAN ?= @ cd $(ENV_DIR) && \
+	$(TERRAFORM) plan -out=$(ENV_DIR)/.terraform/tfplan -input=false && \
+	$(TERRAFORM) show $(ENV_DIR)/.terraform/tfplan -input=false -no-color > $(ENV_DIR)/.terraform/tfplan.txt && \
+	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/.terraform/tfplan.md
+
+CMD_TERRAFORM_APPLY ?= @ cd $(ENV_DIR) && \
+	$(TERRAFORM) apply -input=false $(ENV_DIR)/.terraform/tfplan && \
+	$(TERRAFORM) output -json > $(ENV_DIR)/.terraform/output.json && \
+	$(CMD_SAVE_OUTPUT_TO_SSM)
+
 # Tasks
 ########################################################################################################################
 infra.init: terraform.init
@@ -64,11 +80,8 @@ terraform.debug:
 
 # TODO: Potentionally replace gomplate by terragrunt
 terraform.init: terraform.compat gomplate terraform
-	@ \
- 	cd $(ENV_DIR) && \
-	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
-	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
-	$(TERRAFORM) init -input=true
+	$(CMD_TERRAFORM_INIT)
+
 # TODO: Potentionally replace gomplate by terragrunt
 # TODO:? Implement -target approach so we can deploy specific apps only
 # TODO: generate env vars into tfvars in only one task
@@ -84,25 +97,19 @@ terraform.reconfig:
 	cd $(ENV_DIR) && \
 	$(TERRAFORM) init -input=true -reconfigure
 
-# Upgrading TF from v0.12 to v0.13
-terraform.13upgrade:
-	@ echo "Terraform upgrade to v0.13 :"
-	@ echo "-----------------------------"
-	@ $(CMD_TERRAFORM_MODULES_UPGRADE)
+# TF Apply / Deploy infrastructure
+terraform.apply: terraform.plan
+	$(CMD_TERRAFORM_APPLY)
 
-terraform.apply: terraform.plan ## Deploy infrastructure
-	@ cd $(ENV_DIR) && \
-	$(TERRAFORM) apply -input=false $(ENV_DIR)/.terraform/tfplan && \
-	$(TERRAFORM) output -json > $(ENV_DIR)/.terraform/output.json && \
-	$(CMD_SAVE_OUTPUT_TO_SSM)
-
-terraform.checkov: ## Test infrastructure with checkov
+## Test infrastructure with checkov
+terraform.checkov: 
 	@ echo "Testing with Checkov:"
 	@ echo "--------------------"
 	@ cd $(ENV_DIR)
 	@ $(CHECKOV)
 
-terraform.tflint:  ## Test infrastructure with tflint
+## Test infrastructure with tflint
+terraform.tflint:  
 	@ echo "Testing with TFLint:"
 	@ echo "--------------------"
 	@ cd $(ENV_DIR)
@@ -131,14 +138,18 @@ terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json en
 	@ cd $(ENV_DIR) && \
 	$(CMD_SAVE_OUTPUT_TO_SSM)
 
-terraform.plan: terraform.init ## Terraform plan output for Github Action
-	@ cd $(ENV_DIR) && \
-	$(TERRAFORM) plan -out=$(ENV_DIR)/.terraform/tfplan -input=false && \
-	$(TERRAFORM) show $(ENV_DIR)/.terraform/tfplan -input=false -no-color > $(ENV_DIR)/.terraform/tfplan.txt && \
-	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/.terraform/tfplan.md
+## Terraform plan output for Github Action
+terraform.plan: terraform.init 
+	$(CMD_TERRAFORM_PLAN)
 
 terraform.limits: terraform.plan
 	@ $(AWS_LIMITS)
+
+# Upgrading TF from v0.12 to v0.13
+terraform.13upgrade:
+	@ echo "Terraform upgrade to v0.13 :"
+	@ echo "-----------------------------"
+	@ $(CMD_TERRAFORM_MODULES_UPGRADE)
 
 env.use: terraform jq
 	@ [ -e $(ENV_DIR) ] && \
