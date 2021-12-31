@@ -47,6 +47,22 @@ CMD_SAVE_OUTPUT_TO_SSM = $(AWS) ssm put-parameter --name "/$(ENV)/terraform-outp
 
 # Optional cmd to be used, because the branch related to TF v0.13 upgrade already have updated versions.tf files
 CMD_TERRAFORM_MODULES_UPGRADE = $(shell find $(INFRA_DIR)/terraform -name '*.tf' | xargs -n1 dirname | uniq | xargs -n1 $(TERRAFORM) 0.13upgrade -yes)
+
+CMD_TERRAFORM_INIT ?= @ cd $(ENV_DIR) && \
+	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
+	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
+	$(TERRAFORM) init -input=true
+
+CMD_TERRAFORM_PLAN ?= @ cd $(ENV_DIR) && \
+	$(TERRAFORM) plan -out=$(ENV_DIR)/.terraform/tfplan -input=false && \
+	$(TERRAFORM) show $(ENV_DIR)/.terraform/tfplan -input=false -no-color > $(ENV_DIR)/.terraform/tfplan.txt && \
+	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/.terraform/tfplan.md
+
+CMD_TERRAFORM_APPLY ?= @ cd $(ENV_DIR) && \
+	$(TERRAFORM) apply -input=false $(ENV_DIR)/.terraform/tfplan && \
+	$(TERRAFORM) output -json > $(ENV_DIR)/.terraform/output.json && \
+	$(CMD_SAVE_OUTPUT_TO_SSM)
+
 # Tasks
 ########################################################################################################################
 infra.init: terraform.init
@@ -63,11 +79,6 @@ terraform.debug:
 	@echo "\033[36mTF_VAR_ssh_public_key\033[0m: $(TF_VAR_ssh_public_key)"
 
 # TODO: Potentionally replace gomplate by terragrunt
-CMD_TERRAFORM_INIT ?= @ cd $(ENV_DIR) && \
-	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
-	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
-	$(TERRAFORM) init -input=true
-
 terraform.init: terraform.compat gomplate terraform
 	$(CMD_TERRAFORM_INIT)
 
@@ -87,11 +98,6 @@ terraform.reconfig:
 	$(TERRAFORM) init -input=true -reconfigure
 
 # TF Apply / Deploy infrastructure
-CMD_TERRAFORM_APPLY ?= @ cd $(ENV_DIR) && \
-	$(TERRAFORM) apply -input=false $(ENV_DIR)/.terraform/tfplan && \
-	$(TERRAFORM) output -json > $(ENV_DIR)/.terraform/output.json && \
-	$(CMD_SAVE_OUTPUT_TO_SSM)
-
 terraform.apply: terraform.plan
 	$(CMD_TERRAFORM_APPLY)
 
@@ -133,14 +139,8 @@ terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json en
 	$(CMD_SAVE_OUTPUT_TO_SSM)
 
 ## Terraform plan output for Github Action
-CMD_TERRAFORM_PLAN ?= @ cd $(ENV_DIR) && \
-	$(TERRAFORM) plan -out=$(ENV_DIR)/.terraform/tfplan -input=false && \
-	$(TERRAFORM) show $(ENV_DIR)/.terraform/tfplan -input=false -no-color > $(ENV_DIR)/.terraform/tfplan.txt && \
-	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/.terraform/tfplan.md
-
 terraform.plan: terraform.init 
 	$(CMD_TERRAFORM_PLAN)
-
 
 terraform.limits: terraform.plan
 	@ $(AWS_LIMITS)
