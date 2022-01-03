@@ -3,6 +3,7 @@
 #### Default settings for IZE
 MACOS_ARCH_NAME = $(shell uname -m)
 MACOS_ARCH = $(shell echo $$(if [ "$(MACOS_ARCH_NAME)" = "x86_64" ]; then echo "amd64"; else echo "arm64"; fi))
+LINUX_ARCH = 
 IZE_DIR ?= $(INFRA_DIR)/bin
 TMPDIR ?= /tmp
 IZE_VERSION ?= 0.1.0
