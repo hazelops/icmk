@@ -19,3 +19,5 @@ AWS_LIMITS_LIST ?= $$(echo "{ \
 }")
 TERRAFORM_STATE_DYNAMODB_TABLE ?= tf-state-lock
 TF_LOG_LEVEL ?= 
+
+IZE_ENABLED ?= false
