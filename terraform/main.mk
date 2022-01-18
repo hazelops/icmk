@@ -48,17 +48,17 @@ CMD_SAVE_OUTPUT_TO_SSM = $(AWS) ssm put-parameter --name "/$(ENV)/terraform-outp
 # Optional cmd to be used, because the branch related to TF v0.13 upgrade already have updated versions.tf files
 CMD_TERRAFORM_MODULES_UPGRADE = $(shell find $(INFRA_DIR)/terraform -name '*.tf' | xargs -n1 dirname | uniq | xargs -n1 $(TERRAFORM) 0.13upgrade -yes)
 
-CMD_TERRAFORM_INIT ?= @ [ ! "$(IZE_ENABLED)" == "true" ] && cd $(ENV_DIR) & \
+CMD_TERRAFORM_INIT ?= @ [ "$(IZE_ENABLED)" = "true" ] || cd $(ENV_DIR) && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_BACKEND_CONFIG) | $(GOMPLATE) > backend.tf && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_VARS) | $(GOMPLATE) > terraform.tfvars && \
 	$(TERRAFORM) init -input=true
 
-CMD_TERRAFORM_PLAN ?= @ [ ! "$(IZE_ENABLED)" == "true" ] && cd $(ENV_DIR) & \
+CMD_TERRAFORM_PLAN ?= @ [ "$(IZE_ENABLED)" = "true" ] || cd $(ENV_DIR) && \
 	$(TERRAFORM) plan -out=$(ENV_DIR)/.terraform/tfplan -input=false && \
 	$(TERRAFORM) show $(ENV_DIR)/.terraform/tfplan -input=false -no-color > $(ENV_DIR)/.terraform/tfplan.txt && \
 	cat $(ICMK_TEMPLATE_TERRAFORM_TFPLAN) | $(GOMPLATE) > $(ENV_DIR)/.terraform/tfplan.md
 
-CMD_TERRAFORM_APPLY ?= @ [ ! "$(IZE_ENABLED)" == "true" ] && cd $(ENV_DIR) & \
+CMD_TERRAFORM_APPLY ?= @ [ "$(IZE_ENABLED)" = "true" ] || cd $(ENV_DIR) && \
 	$(TERRAFORM) apply -input=false $(ENV_DIR)/.terraform/tfplan && \
 	$(TERRAFORM) output -json > $(ENV_DIR)/.terraform/output.json && \
 	$(CMD_SAVE_OUTPUT_TO_SSM)
@@ -102,14 +102,14 @@ terraform.apply: terraform.plan
 	$(CMD_TERRAFORM_APPLY)
 
 ## Test infrastructure with checkov
-terraform.checkov: 
+terraform.checkov:
 	@ echo "Testing with Checkov:"
 	@ echo "--------------------"
 	@ cd $(ENV_DIR)
 	@ $(CHECKOV)
 
 ## Test infrastructure with tflint
-terraform.tflint:  
+terraform.tflint:
 	@ echo "Testing with TFLint:"
 	@ echo "--------------------"
 	@ cd $(ENV_DIR)
@@ -139,7 +139,7 @@ terraform.output-to-ssm: ## Manual upload output.json to AWS SSM. Output.json en
 	$(CMD_SAVE_OUTPUT_TO_SSM)
 
 ## Terraform plan output for Github Action
-terraform.plan: terraform.init 
+terraform.plan: terraform.init
 	$(CMD_TERRAFORM_PLAN)
 
 terraform.limits: terraform.plan
