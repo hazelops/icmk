@@ -2,6 +2,7 @@
 ##################################################################
 # Main variables
 ENV_BASE = dev
+OWNER ?= hazelops
 NPM_TOKEN ?= nil
 BUSYBOX_VERSION ?= 1.31.1
 # This is a workaround for syntax highlighters that break on a "Comment" symbol.

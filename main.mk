@@ -27,6 +27,8 @@ ICMK_TEMPLATE_WAYPOINT_VARS = $(INFRA_DIR)/icmk/waypoint/templates/waypoint.wpva
 ENV ?= $(AWS_DEV_ENV_NAME)
 ENV_DIR ?= $(INFRA_DIR)/env/$(ENV)
 
+GIT_REPO ?= $(shell basename `git rev-parse --show-toplevel`)
+
 # Support for stack/tier workspace paths
 ifneq (,$(TIER))
 	ifneq (,$(STACK))
@@ -101,6 +103,8 @@ GOMPLATE ?= $(DOCKER) run --user "$(CURRENT_USER_ID):$(CURRENT_USERGROUP_ID)" \
 	-e AWS_PROFILE="$(AWS_PROFILE)" \
 	-e AWS_REGION="$(AWS_REGION)" \
 	-e NAMESPACE="$(NAMESPACE)" \
+	-e OWNER="$(OWNER)" \
+	-e GIT_REPO="$(GIT_REPO)" \
 	-e ROOT_DIR="$(ROOT_DIR)" \
 	-e EC2_KEY_PAIR_NAME="$(EC2_KEY_PAIR_NAME)" \
 	-e TAG="$(TAG)" \
