@@ -47,7 +47,6 @@ provider "aws" {
       terraform          = "true"
       namespace          = "{{ .Env.NAMESPACE }}"
       environment        = "{{ .Env.ENV }}"
-      owner              = "{{ .Env.OWNER }}"
       terraform-git-repo = "{{ .Env.GIT_REPO }}"
     }
   }
