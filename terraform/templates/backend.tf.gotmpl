@@ -46,7 +46,7 @@ provider "aws" {
     tags = {
       terraform          = "true"
       namespace          = "{{ .Env.NAMESPACE }}"
-      environment        = "{{ .Env.ENV }}"
+      env                = "{{ .Env.ENV }}"
       terraform-git-repo = "{{ .Env.GIT_REPO }}"
     }
   }
