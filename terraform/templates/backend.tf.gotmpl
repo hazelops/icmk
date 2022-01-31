@@ -42,6 +42,14 @@ provider "aws" {
 provider "aws" {
   profile = var.aws_profile
   region  = var.aws_region
+  default_tags {
+    tags = {
+      terraform          = "true"
+      namespace          = "{{ .Env.NAMESPACE }}"
+      env                = "{{ .Env.ENV }}"
+      terraform-git-repo = "{{ .Env.GIT_REPO }}"
+    }
+  }
 }
 
 terraform {
