@@ -1,5 +1,9 @@
+# ⚠️This repository is not maintained⚠️
+# ⚠️This repository is outdated and deprecated⚠️
+
+### Please, use [ize](https://github.com/hazelops/ize) tool instead.
+
 # Infrastructure as Code Make Framework
-![tests](https://github.com/hazelops/icmk/workflows/tests/badge.svg?branch=master)
 
 This framework is an attempt to create a convenient way to manage Infrastructure as Code with low barrier of entry for the Runner.
 
